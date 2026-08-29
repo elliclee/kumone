@@ -457,6 +457,7 @@ struct CoverCardBody: View {
     var onPlay: (() -> Void)?
 
     @State private var isHovering = false
+    @Environment(\.flexibleCardWidth) private var flexibleWidth
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -476,8 +477,8 @@ struct CoverCardBody: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .frame(width: size, alignment: .leading)
-        .frame(maxWidth: size == nil ? .infinity : nil, alignment: .leading)
+        .frame(width: isFluid ? nil : size, alignment: .leading)
+        .frame(maxWidth: isFluid ? .infinity : nil, alignment: .leading)
         .contentShape(Rectangle())
         #if os(macOS)
         .onHover { isHovering = $0 }
@@ -486,13 +487,17 @@ struct CoverCardBody: View {
 
     @ViewBuilder
     private var sizedArtwork: some View {
-        if let size {
-            artwork.frame(width: size, height: size)
-        } else {
+        if isFluid {
             artwork
                 .aspectRatio(1, contentMode: .fit)
                 .frame(maxWidth: .infinity)
+        } else if let size {
+            artwork.frame(width: size, height: size)
         }
+    }
+
+    private var isFluid: Bool {
+        flexibleWidth || size == nil
     }
 
     private var artwork: some View {

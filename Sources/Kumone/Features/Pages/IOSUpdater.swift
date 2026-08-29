@@ -192,10 +192,14 @@ struct IOSUpdaterSheet: View {
                     .font(.caption).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 primaryButton("自动安装（TrollStore）") { updater.installViaTrollStore(release) }
-                Button("下载 IPA 手动侧载") { updater.download(release) }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.accent)
+                Button("下载 IPA 手动侧载", systemImage: "square.and.arrow.down") {
+                    updater.download(release)
+                }
+                .font(.subheadline.weight(.semibold))
+                .controlSize(.large)
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.large))
+                .tint(Theme.accent)
                 laterButton
 
             case .downloading(let progress):
@@ -230,26 +234,33 @@ struct IOSUpdaterSheet: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .presentationDetents([.height(360)])
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func primaryButton(_ title: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
-                .frame(maxWidth: .infinity).padding(.vertical, 12)
-                .background(Theme.accentGradient, in: Capsule())
+                .font(.headline)
+                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.pressable)
+        .controlSize(.large)
+        .appProminentButtonStyle()
     }
 
     private var laterButton: some View {
-        Button("稍后") { dismiss() }
-            .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(.secondary)
+        Button("稍后") {
+            IOSUpdater.shared.showSheet = false
+            dismiss()
+        }
+        .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(.secondary)
     }
 
     private var doneButton: some View {
-        Button("完成") { dismiss() }.buttonStyle(.pressable)
+        Button("完成") { dismiss() }
+            .font(.headline)
+            .controlSize(.large)
+            .appProminentButtonStyle()
     }
 }
 
@@ -263,7 +274,7 @@ struct ProgressRing: View {
                 .stroke(.primary.opacity(0.12), lineWidth: 8)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(Theme.accentGradient,
+                .stroke(Theme.accent,
                         style: StrokeStyle(lineWidth: 8, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(.easeInOut(duration: 0.2), value: progress)

@@ -164,31 +164,52 @@ struct Shelf<Content: View>: View {
 
 // MARK: - Adaptive card grid
 
+/// Set by `CardGrid` on compact iOS so cards fill their (even) column instead
+/// of staying a fixed 160pt — which on narrow iPhones only fit one per row.
+private struct FlexibleCardWidthKey: EnvironmentKey { static let defaultValue = false }
+extension EnvironmentValues {
+    var flexibleCardWidth: Bool {
+        get { self[FlexibleCardWidthKey.self] }
+        set { self[FlexibleCardWidthKey.self] = newValue }
+    }
+}
+
 struct CardGrid<Content: View>: View {
     var minWidth: CGFloat = Theme.Layout.cardSize
     @ViewBuilder var content: () -> Content
 
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompact: Bool { horizontalSizeClass == .compact }
+    #else
+    private var isCompact: Bool { false }
+    #endif
+
     var body: some View {
         LazyVGrid(
             columns: columns,
-            alignment: .leading, spacing: 24
+            alignment: .leading,
+            spacing: isCompact ? 20 : 24
         ) {
             content()
         }
+        .environment(\.flexibleCardWidth, isCompact)
     }
 
     private var columns: [GridItem] {
         #if os(iOS)
-        return [
-            GridItem(.flexible(), spacing: Theme.Layout.gridSpacing, alignment: .topLeading),
-            GridItem(.flexible(), spacing: Theme.Layout.gridSpacing, alignment: .topLeading),
-        ]
+        if isCompact {
+            return [
+                GridItem(.flexible(), spacing: Theme.Layout.gridSpacing, alignment: .topLeading),
+                GridItem(.flexible(), spacing: Theme.Layout.gridSpacing, alignment: .topLeading),
+            ]
+        }
         #else
+        #endif
         return [
             GridItem(.adaptive(minimum: minWidth, maximum: minWidth + 40),
                      spacing: Theme.Layout.gridSpacing, alignment: .top)
         ]
-        #endif
     }
 }
 
