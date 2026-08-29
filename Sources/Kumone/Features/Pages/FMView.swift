@@ -6,6 +6,7 @@ struct FMView: View {
     @EnvironmentObject private var account: AccountStore
     @Environment(\.openLogin) private var openLogin
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -47,7 +48,124 @@ struct FMView: View {
 
     // MARK: - Content
 
+    @ViewBuilder
     private var content: some View {
+        #if os(iOS)
+        if player.isFMMode {
+            iosActiveContent
+        } else {
+            iosIdleState
+        }
+        #else
+        desktopContent
+        #endif
+    }
+
+    #if os(iOS)
+    private var iosActiveContent: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                activeArtwork
+
+                trackMetadata
+
+                controls
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 32)
+            .padding(.top, 12)
+            .padding(.bottom, 32)
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    @ViewBuilder
+    private var iosIdleState: some View {
+        if #available(iOS 17.0, *) {
+            ContentUnavailableView {
+                Label("私人漫游", systemImage: "wave.3.right.circle")
+            } description: {
+                Text("根据你的口味持续推荐音乐")
+            } actions: {
+                startFMButton
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "wave.3.right.circle")
+                    .font(.system(size: 48, weight: .regular))
+                    .foregroundStyle(.secondary)
+                Text("私人漫游")
+                    .font(.title2.bold())
+                Text("根据你的口味持续推荐音乐")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                startFMButton
+                    .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, Theme.Layout.contentInset)
+        }
+    }
+
+    private var activeArtwork: some View {
+        ZStack {
+            if let cover = track?.album.picUrl?.resizedImageURL(768) {
+                CachedAsyncImage(url: cover)
+                    .frame(width: 300, height: 300)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: Theme.Radius.large,
+                            style: .continuous
+                        )
+                    )
+            } else {
+                RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous)
+                    .fill(.quaternary)
+                    .frame(width: 300, height: 300)
+                    .overlay {
+                        ProgressView()
+                    }
+            }
+        }
+        .scaleEffect(player.isPlaying && !reduceMotion ? 1 : 0.96)
+        .animation(reduceMotion ? nil : AppAnimation.smooth, value: player.isPlaying)
+        .accessibilityHidden(true)
+    }
+
+    private var trackMetadata: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 8) {
+                Text(track?.name ?? String(localized: "私人漫游"))
+                    .font(.title2.bold())
+                    .lineLimit(1)
+                if track?.fee == 1 {
+                    VIPBadge()
+                }
+            }
+            Text(track?.artistNames ?? String(localized: "正在为你选歌"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: 360)
+    }
+
+    @ViewBuilder
+    private var startFMButton: some View {
+        Button {
+            player.startFM()
+        } label: {
+            Label("开始漫游", systemImage: "wave.3.right")
+                .font(.headline)
+        }
+        .controlSize(.large)
+        .appProminentButtonStyle()
+    }
+    #endif
+
+    #if os(macOS)
+    private var desktopContent: some View {
         VStack(spacing: 28) {
             Spacer()
 
@@ -109,8 +227,62 @@ struct FMView: View {
         }
         .padding(.horizontal, 40)
     }
+    #endif
 
+    @ViewBuilder
     private var controls: some View {
+        #if os(iOS)
+        HStack(spacing: 24) {
+            Button {
+                player.fmTrash()
+            } label: {
+                Image(systemName: "trash")
+                    .font(.title3.weight(.medium))
+                    .frame(
+                        width: Theme.Layout.minimumTouchTarget,
+                        height: Theme.Layout.minimumTouchTarget
+                    )
+            }
+            .buttonStyle(.pressable)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("不喜欢，换一首")
+
+            Button {
+                player.togglePlayPause()
+            } label: {
+                Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: 30, weight: .semibold))
+                    .contentTransition(.opacity)
+                    .frame(width: 64, height: 64)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.pressable)
+            .foregroundStyle(.primary)
+            .accessibilityLabel(player.isPlaying ? "暂停" : "播放")
+
+            Button {
+                player.fmNext()
+            } label: {
+                Image(systemName: "forward.fill")
+                    .font(.title3.weight(.medium))
+                    .frame(
+                        width: Theme.Layout.minimumTouchTarget,
+                        height: Theme.Layout.minimumTouchTarget
+                    )
+            }
+            .buttonStyle(.pressable)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("下一首")
+
+            if let track {
+                LikeButton(trackID: track.id, size: 18)
+                    .frame(
+                        width: Theme.Layout.minimumTouchTarget,
+                        height: Theme.Layout.minimumTouchTarget
+                    )
+            }
+        }
+        #else
         HStack(spacing: 26) {
             Button {
                 player.fmTrash()
@@ -158,9 +330,36 @@ struct FMView: View {
                     .background(.primary.opacity(0.06), in: Circle())
             }
         }
+        #endif
     }
 
+    @ViewBuilder
     private var loginPrompt: some View {
+        #if os(iOS)
+        if #available(iOS 17.0, *) {
+            ContentUnavailableView {
+                Label("登录后开启私人漫游", systemImage: "person.crop.circle")
+            } description: {
+                Text("网易云会根据你的听歌口味推荐音乐")
+            } actions: {
+                loginButton
+            }
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+                Text("登录后开启私人漫游")
+                    .font(.title2.bold())
+                Text("网易云会根据你的听歌口味推荐音乐")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                loginButton
+                    .padding(.top, 4)
+            }
+        }
+        #else
         VStack(spacing: 16) {
             Image(systemName: "wave.3.right.circle")
                 .font(.system(size: 52, weight: .light))
@@ -174,5 +373,15 @@ struct FMView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.accent)
         }
+        #endif
     }
+
+    #if os(iOS)
+    @ViewBuilder
+    private var loginButton: some View {
+        Button("登录") { openLogin() }
+            .controlSize(.large)
+            .appProminentButtonStyle()
+    }
+    #endif
 }

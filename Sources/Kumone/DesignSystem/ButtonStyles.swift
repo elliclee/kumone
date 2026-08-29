@@ -149,3 +149,25 @@ extension ButtonStyle where Self == PressableButtonStyle {
 extension ButtonStyle where Self == ChipButtonStyle {
     static func chip(isSelected: Bool) -> ChipButtonStyle { ChipButtonStyle(isSelected: isSelected) }
 }
+
+extension View {
+    /// Uses the platform's own prominent action treatment. iOS 26 supplies
+    /// Liquid Glass; older systems retain the native filled button.
+    @ViewBuilder
+    func appProminentButtonStyle() -> some View {
+        #if os(iOS)
+        if #available(iOS 26.0, *) {
+            buttonStyle(.glassProminent)
+                .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.large))
+                .tint(Theme.accent)
+        } else {
+            buttonStyle(.borderedProminent)
+                .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.large))
+                .tint(Theme.accent)
+        }
+        #else
+        buttonStyle(.borderedProminent)
+            .tint(Theme.accent)
+        #endif
+    }
+}

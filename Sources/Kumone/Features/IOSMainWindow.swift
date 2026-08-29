@@ -515,82 +515,75 @@ struct IOSLibraryView: View {
     var body: some View {
         List {
             if let profile = account.profile {
-                Section {
-                    HStack(spacing: 14) {
-                        CachedAsyncImage(url: profile.avatarUrl?.resizedImageURL(128))
-                            .frame(width: 52, height: 52)
-                            .clipShape(Circle())
-                        VStack(alignment: .leading, spacing: 3) {
-                            HStack(spacing: 6) {
-                                Text(profile.nickname)
-                                    .font(.headline)
-                                if profile.vipType > 0 {
-                                    VIPBadge()
-                                }
-                            }
-                            if let sig = profile.signature, !sig.isEmpty {
-                                Text(sig)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                        }
-                    }
-                    .frame(minHeight: 64)
+                profileRow(profile)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: 4,
+                            leading: Theme.Layout.contentInset,
+                            bottom: 12,
+                            trailing: Theme.Layout.contentInset
+                        )
+                    )
                     .listRowSeparator(.hidden)
-                }
             }
 
             if account.hasAuthCookie {
-                Section {
-                    if let liked = account.likedSongsPlaylist {
-                        NavigationLink(value: Destination.playlist(liked.id)) {
-                            LibraryDestinationRow(title: "我喜欢的音乐", icon: "heart.fill")
-                        }
-                    }
-                    NavigationLink(value: Destination.daily) {
-                        LibraryDestinationRow(title: "每日推荐", icon: "calendar")
-                    }
-                    NavigationLink(value: Destination.recents) {
-                        LibraryDestinationRow(title: "最近播放", icon: "clock.fill")
-                    }
-                    NavigationLink(value: Destination.collections) {
-                        LibraryDestinationRow(title: "我的收藏", icon: "star.fill")
-                    }
-                    NavigationLink(value: Destination.cloud) {
-                        LibraryDestinationRow(title: "音乐云盘", icon: "icloud.fill")
-                    }
+                if let liked = account.likedSongsPlaylist {
+                    destinationRow(
+                        title: "我喜欢的音乐",
+                        icon: "heart.fill",
+                        destination: .playlist(liked.id)
+                    )
                 }
+                destinationRow(title: "每日推荐", icon: "calendar", destination: .daily)
+                destinationRow(title: "最近播放", icon: "clock.fill", destination: .recents)
+                destinationRow(title: "我的收藏", icon: "star.fill", destination: .collections)
+                destinationRow(title: "音乐云盘", icon: "icloud.fill", destination: .cloud)
+                    .listRowSeparator(.hidden, edges: .bottom)
 
                 if !account.createdPlaylists.isEmpty {
-                    Section {
-                        ForEach(account.createdPlaylists) { playlist in
-                            NavigationLink(value: Destination.playlist(playlist.id)) {
-                                playlistRow(playlist)
-                            }
+                    playlistHeader(title: "创建的歌单", showsAddButton: true)
+                        .listRowInsets(
+                            EdgeInsets(
+                                top: 16,
+                                leading: Theme.Layout.contentInset,
+                                bottom: 4,
+                                trailing: Theme.Layout.contentInset
+                            )
+                        )
+                        .listRowSeparator(.hidden)
+
+                    ForEach(account.createdPlaylists) { playlist in
+                        NavigationLink(value: Destination.playlist(playlist.id)) {
+                            playlistRow(playlist)
                         }
-                    } header: {
-                        playlistHeader(title: "创建的歌单", showsAddButton: true)
+                        .listRowInsets(playlistInsets)
                     }
                 }
 
                 if !account.subscribedPlaylists.isEmpty {
-                    Section {
-                        ForEach(account.subscribedPlaylists) { playlist in
-                            NavigationLink(value: Destination.playlist(playlist.id)) {
-                                playlistRow(playlist)
-                            }
+                    playlistHeader(title: "收藏的歌单", showsAddButton: false)
+                        .listRowInsets(
+                            EdgeInsets(
+                                top: 16,
+                                leading: Theme.Layout.contentInset,
+                                bottom: 4,
+                                trailing: Theme.Layout.contentInset
+                            )
+                        )
+                        .listRowSeparator(.hidden)
+
+                    ForEach(account.subscribedPlaylists) { playlist in
+                        NavigationLink(value: Destination.playlist(playlist.id)) {
+                            playlistRow(playlist)
                         }
-                    } header: {
-                        playlistHeader(title: "收藏的歌单", showsAddButton: false)
+                        .listRowInsets(playlistInsets)
                     }
                 }
             } else {
-                Section {
-                    signedOutState
-                        .frame(maxWidth: .infinity, minHeight: 480)
-                        .listRowSeparator(.hidden)
-                }
+                signedOutState
+                    .frame(maxWidth: .infinity, minHeight: 480)
+                    .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
@@ -603,6 +596,7 @@ struct IOSLibraryView: View {
                 } label: {
                     Image(systemName: "gearshape")
                 }
+                .accessibilityLabel("设置")
             }
         }
         .sheet(isPresented: $showSettings) {
@@ -638,10 +632,65 @@ struct IOSLibraryView: View {
         }
     }
 
+    private var playlistInsets: EdgeInsets {
+        EdgeInsets(
+            top: 4,
+            leading: Theme.Layout.contentInset,
+            bottom: 4,
+            trailing: Theme.Layout.contentInset
+        )
+    }
+
+    private func profileRow(_ profile: UserProfile) -> some View {
+        HStack(spacing: 12) {
+            CachedAsyncImage(url: profile.avatarUrl?.resizedImageURL(128))
+                .frame(width: 48, height: 48)
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(profile.nickname)
+                        .font(.headline)
+                        .lineLimit(1)
+                    if profile.vipType > 0 {
+                        VIPBadge()
+                    }
+                }
+                if let signature = profile.signature, !signature.isEmpty {
+                    Text(signature)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(minHeight: 56)
+    }
+
+    private func destinationRow(
+        title: LocalizedStringKey,
+        icon: String,
+        destination: Destination
+    ) -> some View {
+        NavigationLink(value: destination) {
+            LibraryDestinationRow(title: title, icon: icon)
+        }
+        .listRowInsets(
+            EdgeInsets(
+                top: 0,
+                leading: Theme.Layout.contentInset,
+                bottom: 0,
+                trailing: Theme.Layout.contentInset
+            )
+        )
+    }
+
     private func playlistRow(_ playlist: PlaylistSummary) -> some View {
         HStack(spacing: 12) {
             CachedAsyncImage(url: playlist.coverURL?.resizedImageURL(96), animated: false)
-                .frame(width: 44, height: 44)
+                .frame(width: 48, height: 48)
                 .clipShape(
                     RoundedRectangle(
                         cornerRadius: Theme.Radius.small,
@@ -658,8 +707,8 @@ struct IOSLibraryView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(minHeight: 56)
-        .alignmentGuide(.listRowSeparatorLeading) { _ in 56 }
+        .frame(minHeight: 52)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 60 }
     }
 
     @ViewBuilder
@@ -673,7 +722,8 @@ struct IOSLibraryView: View {
                 Button("登录") {
                     showLogin = true
                 }
-                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .appProminentButtonStyle()
             }
         } else {
             VStack(spacing: 12) {
@@ -689,7 +739,8 @@ struct IOSLibraryView: View {
                 Button("登录") {
                     showLogin = true
                 }
-                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .appProminentButtonStyle()
             }
         }
     }
@@ -702,7 +753,6 @@ struct IOSLibraryView: View {
             Text(title)
                 .font(Theme.Typography.sectionTitle)
                 .foregroundStyle(.primary)
-                .textCase(nil)
             Spacer()
             if showsAddButton {
                 Button {
@@ -717,9 +767,11 @@ struct IOSLibraryView: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .foregroundStyle(Theme.accent)
                 .accessibilityLabel("新建歌单")
             }
         }
+        .frame(minHeight: Theme.Layout.minimumTouchTarget)
     }
 }
 
@@ -730,16 +782,16 @@ private struct LibraryDestinationRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.body.weight(.medium))
+                .font(.title3.weight(.medium))
                 .foregroundStyle(Theme.accent)
-                .frame(width: 24)
+                .frame(width: 28)
             Text(title)
                 .font(.body)
                 .foregroundStyle(.primary)
             Spacer(minLength: 0)
         }
-        .frame(minHeight: Theme.Layout.minimumTouchTarget)
-        .alignmentGuide(.listRowSeparatorLeading) { _ in 36 }
+        .frame(minHeight: 52)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 40 }
     }
 }
 #endif

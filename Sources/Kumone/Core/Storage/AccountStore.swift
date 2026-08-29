@@ -12,8 +12,13 @@ final class AccountStore: ObservableObject {
     @Published var likedArtists: [ArtistSummary] = []
     @Published var isBootstrapped = false
 
-    var isLoggedIn: Bool { NeteaseClient.shared.isLoggedIn && profile != nil }
-    var hasAuthCookie: Bool { NeteaseClient.shared.isLoggedIn }
+    var isLoggedIn: Bool { hasAuthCookie && profile != nil }
+    var hasAuthCookie: Bool {
+        #if DEBUG
+        if isUITestAuthenticatedPreview { return true }
+        #endif
+        return NeteaseClient.shared.isLoggedIn
+    }
     var vipType: Int { profile?.vipType ?? 0 }
 
     var likedSongsPlaylist: PlaylistSummary? {
@@ -35,6 +40,12 @@ final class AccountStore: ObservableObject {
     /// Called at launch and after login succeeds.
     func bootstrap() async {
         defer { isBootstrapped = true }
+        #if DEBUG
+        if isUITestAuthenticatedPreview {
+            loadUITestAuthenticatedPreview()
+            return
+        }
+        #endif
         guard hasAuthCookie else { return }
         refreshCookieIfNeeded()
         do {
@@ -98,6 +109,30 @@ final class AccountStore: ObservableObject {
         UserDefaults.standard.set(today, forKey: key)
         Task { await NeteaseAPI.refreshLogin() }
     }
+
+    #if DEBUG
+    private var isUITestAuthenticatedPreview: Bool {
+        ProcessInfo.processInfo.arguments.contains("--ui-test-authenticated")
+    }
+
+    /// Deterministic data for screenshot coverage of the signed-in iPhone UI.
+    /// It is compiled only in Debug and never touches the real cookie jar.
+    private func loadUITestAuthenticatedPreview() {
+        let decoder = JSONDecoder()
+        let profileJSON = #"{"userId":1001,"nickname":"RANDOMFLOW","signature":"👋","vipType":11}"#
+        let playlistsJSON = #"""
+        [
+            {"id":1,"name":"我喜欢的音乐","trackCount":128,"specialType":5,"creator":{"userId":1001,"nickname":"RANDOMFLOW"}},
+            {"id":2,"name":"RANDOMFLOW 的 2025 年度歌单","trackCount":10,"creator":{"userId":1001,"nickname":"RANDOMFLOW"}},
+            {"id":3,"name":"夜晚循环","trackCount":36,"creator":{"userId":1001,"nickname":"RANDOMFLOW"}},
+            {"id":4,"name":"收藏的独立音乐","trackCount":52,"subscribed":true,"creator":{"userId":2002,"nickname":"Music Lover"}}
+        ]
+        """#
+
+        profile = try? decoder.decode(UserProfile.self, from: Data(profileJSON.utf8))
+        userPlaylists = (try? decoder.decode([PlaylistSummary].self, from: Data(playlistsJSON.utf8))) ?? []
+    }
+    #endif
 }
 
 // MARK: - Toasts
