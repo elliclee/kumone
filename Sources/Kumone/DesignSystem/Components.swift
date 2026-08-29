@@ -109,7 +109,7 @@ struct SectionHeader: View {
                 Button(action: action) {
                     HStack(spacing: 4) {
                         Text(title)
-                            .font(.title2.weight(.semibold))
+                            .font(Theme.Typography.sectionTitle)
                             .foregroundStyle(.primary)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 13, weight: .semibold))
@@ -123,7 +123,7 @@ struct SectionHeader: View {
                 }
             } else {
                 Text(title)
-                    .font(.title2.weight(.semibold))
+                    .font(Theme.Typography.sectionTitle)
             }
             if let subtitle {
                 Text(subtitle)
@@ -132,6 +132,9 @@ struct SectionHeader: View {
             }
             Spacer()
         }
+        #if os(iOS)
+        .frame(minHeight: Theme.Layout.minimumTouchTarget)
+        #endif
     }
 }
 
@@ -436,4 +439,3 @@ final class MarqueeTextView: PlatformView {
         #endif
     }
 }
-

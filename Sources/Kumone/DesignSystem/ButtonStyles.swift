@@ -64,13 +64,20 @@ struct InteractiveRowStyle: ButtonStyle {
 
 /// Subtle press feedback for icon buttons.
 struct PressableButtonStyle: ButtonStyle {
-    var pressScale: CGFloat = 0.9
+    var pressScale: CGFloat = {
+        #if os(iOS)
+        return 0.96
+        #else
+        return 0.9
+        #endif
+    }()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? pressScale : 1.0)
-            .opacity(configuration.isPressed ? 0.7 : 1.0)
-            .animation(AppAnimation.quick, value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? pressScale : 1.0)
+            .opacity(configuration.isPressed ? 0.78 : 1.0)
+            .animation(reduceMotion ? nil : AppAnimation.quick, value: configuration.isPressed)
     }
 }
 
@@ -102,9 +109,9 @@ struct ChipButtonStyle: ButtonStyle {
             .onHover { isHovering = $0 }
         #else
         configuration.label
-            .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .font(.subheadline.weight(isSelected ? .semibold : .medium))
+            .padding(.horizontal, 14)
+            .frame(height: 32)
             .background(
                 Capsule().fill(
                     isSelected
@@ -115,6 +122,9 @@ struct ChipButtonStyle: ButtonStyle {
             .foregroundStyle(isSelected ? .white : .primary)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(AppAnimation.spring, value: configuration.isPressed)
+            .frame(minHeight: Theme.Layout.minimumTouchTarget)
+            .contentShape(Rectangle())
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
         #endif
     }
 }

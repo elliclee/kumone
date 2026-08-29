@@ -389,7 +389,7 @@ struct IOSMiniPlayerBar: View {
             .accessibilityLabel(nowPlayingAccessibilityLabel)
             .accessibilityHint("打开正在播放")
 
-            if !presentation.isInline {
+            if presentation.drawsBackground {
                 Button(action: player.previous) {
                     Image(systemName: "backward.fill")
                         .font(.system(size: 14, weight: .semibold))
@@ -432,7 +432,7 @@ struct IOSMiniPlayerBar: View {
     }
 
     private var trackSummary: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .center, spacing: 10) {
             CachedAsyncImage(url: player.currentTrack?.album.picUrl?.resizedImageURL(128))
                 .frame(
                     width: artworkSize,
@@ -441,37 +441,31 @@ struct IOSMiniPlayerBar: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 1)
 
-            VStack(alignment: .leading, spacing: metadataSpacing) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(player.currentTrack?.name ?? "")
                     .font(titleFont)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                Text(player.currentTrack?.artistNames ?? "")
-                    .font(artistFont)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                if !presentation.isInline {
+                    Text(player.currentTrack?.artistNames ?? "")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .contentShape(Rectangle())
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var artworkSize: CGFloat {
-        presentation.isInline ? 28 : 32
+        presentation.isInline ? 28 : 40
     }
 
     private var titleFont: Font {
-        .system(size: presentation.isInline ? 10 : 13, weight: .semibold)
-    }
-
-    private var artistFont: Font {
-        .system(size: presentation.isInline ? 8 : 10)
-    }
-
-    private var metadataSpacing: CGFloat {
-        presentation.isInline ? 2 : 3
+        presentation.isInline ? .caption.weight(.semibold) : .subheadline.weight(.semibold)
     }
 
     private var nowPlayingAccessibilityLabel: String {

@@ -37,13 +37,13 @@ struct CoverCard: View {
                 .frame(width: size, height: size)
 
                 Text(title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.cardTitle)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                     .foregroundStyle(.primary)
                 if let subtitle, !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.system(size: 11))
+                        .font(Theme.Typography.cardSubtitle)
                         .lineLimit(1)
                         .foregroundStyle(.secondary)
                 }
@@ -71,7 +71,7 @@ struct ArtistCard: View {
                     .clipShape(Circle())
                     .overlay(Circle().strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
                 Text(artist.name)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.cardTitle)
                     .lineLimit(1)
                     .foregroundStyle(.primary)
             }
@@ -105,15 +105,26 @@ struct Shelf<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: headerSpacing) {
             SectionHeader(title: title, action: seeAll)
                 .padding(.horizontal, Theme.Layout.contentInset)
             ScrollView(.horizontal, showsIndicators: false) {
                 cards
                     .padding(.vertical, 6)
             }
+            #if os(iOS)
+            .frame(height: rowHeight.map { $0 + 12 })
+            #endif
             .compatScrollClipDisabled()
         }
+    }
+
+    private var headerSpacing: CGFloat {
+        #if os(iOS)
+        return 4
+        #else
+        return 14
+        #endif
     }
 
     private var edgeInset: some View {

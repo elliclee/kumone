@@ -19,8 +19,50 @@ enum Theme {
         static let panel: CGFloat = 20
     }
 
+    enum Typography {
+        static var sectionTitle: Font {
+            #if os(iOS)
+            return .title2.weight(.bold)
+            #else
+            return .title2.weight(.semibold)
+            #endif
+        }
+
+        static var cardTitle: Font {
+            #if os(iOS)
+            return .footnote.weight(.medium)
+            #else
+            return .system(size: 13, weight: .medium)
+            #endif
+        }
+
+        static var cardSubtitle: Font {
+            #if os(iOS)
+            return .caption2
+            #else
+            return .system(size: 11)
+            #endif
+        }
+    }
+
     enum Layout {
-        static let contentInset: CGFloat = 24
+        /// Aligns feed content with the system navigation margin on iPhone.
+        /// macOS keeps the roomier desktop inset.
+        static let contentInset: CGFloat = {
+            #if os(iOS)
+            return 16
+            #else
+            return 24
+            #endif
+        }()
+        static let minimumTouchTarget: CGFloat = 44
+        static let sectionSpacing: CGFloat = {
+            #if os(iOS)
+            return 32
+            #else
+            return 34
+            #endif
+        }()
         static let cardSize: CGFloat = 160
         /// Row height for a shelf of cover cards: artwork, then up to two lines
         /// of title and one of subtitle.
@@ -58,9 +100,22 @@ enum AppAnimation {
     static let quick = Animation.easeOut(duration: 0.15)
     static let standard = Animation.easeInOut(duration: 0.25)
     static let smooth = Animation.easeInOut(duration: 0.35)
-    static let spring = Animation.spring(response: 0.35, dampingFraction: 0.7)
+    /// Default state changes on iOS settle without decorative bounce.
+    static let spring: Animation = {
+        #if os(iOS)
+        return .spring(response: 0.32, dampingFraction: 0.9)
+        #else
+        return .spring(response: 0.35, dampingFraction: 0.7)
+        #endif
+    }()
     static let bouncy = Animation.spring(response: 0.4, dampingFraction: 0.6)
-    static let snappy = Animation.spring(response: 0.25, dampingFraction: 0.8)
+    static let snappy: Animation = {
+        #if os(iOS)
+        return .spring(response: 0.25, dampingFraction: 0.9)
+        #else
+        return .spring(response: 0.25, dampingFraction: 0.8)
+        #endif
+    }()
 
     static let staggerDelay = 0.04
     static let maxStaggerDelay = 0.4

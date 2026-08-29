@@ -2,25 +2,44 @@ import XCTest
 
 final class KumoneIOSUITests: XCTestCase {
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testPrimaryTabsOpenTheirRootScreens() throws {
         let app = XCUIApplication()
+        app.launchArguments += ["-settings.autoCheckUpdates", "NO"]
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        XCTAssertTrue(true)
+        let dismissUpdate = app.buttons["稍后"]
+        if dismissUpdate.waitForExistence(timeout: 3) {
+            dismissUpdate.tap()
+        }
+
+        tapPrimaryTab(named: "精选", fallbackX: 0.32, in: app)
+        XCTAssertTrue(app.navigationBars["精选"].waitForExistence(timeout: 5))
+
+        let exploreScreenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        exploreScreenshot.name = "Explore-iPhone"
+        exploreScreenshot.lifetime = .keepAlways
+        add(exploreScreenshot)
+
+        tapPrimaryTab(named: "我的", fallbackX: 0.67, in: app)
+        XCTAssertTrue(app.navigationBars["我的"].waitForExistence(timeout: 5))
+    }
+
+    /// iOS 26's floating TabView can expose a tab button before XCTest has a
+    /// valid hit point for it. Keep the accessibility lookup as the primary
+    /// path, then fall back to the stable iPhone tab position used by this test.
+    @MainActor
+    private func tapPrimaryTab(named name: String, fallbackX: CGFloat, in app: XCUIApplication) {
+        let tab = app.tabBars.buttons[name]
+        XCTAssertTrue(tab.waitForExistence(timeout: 5))
+
+        if tab.isHittable {
+            tab.tap()
+        } else {
+            app.coordinate(withNormalizedOffset: CGVector(dx: fallbackX, dy: 0.94)).tap()
+        }
     }
 }

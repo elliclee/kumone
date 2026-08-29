@@ -144,7 +144,7 @@ struct HomeView: View {
     }
 
     private var loadedBody: some View {
-        LazyVStack(alignment: .leading, spacing: 34) {
+        LazyVStack(alignment: .leading, spacing: Theme.Layout.sectionSpacing) {
             // Anonymous users go straight to recommended playlists;
             // the login entry lives in the sidebar / 我的 tab only.
             if account.isLoggedIn {
@@ -326,7 +326,7 @@ struct HomeView: View {
                     .clipShape(Circle())
                     .overlay(Circle().strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
                 Text(artist.name)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.cardTitle)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
             }
@@ -350,7 +350,7 @@ struct HomeView: View {
             }
             .frame(width: Theme.Layout.cardSize, height: Theme.Layout.cardSize)
             Text(toplist.name)
-                .font(.system(size: 13, weight: .medium))
+                .font(Theme.Typography.cardTitle)
                 .foregroundStyle(.primary)
                 .lineLimit(1)
         }
@@ -464,14 +464,14 @@ struct CoverCardBody: View {
             .frame(width: size, height: size)
 
             Text(title)
-                .font(.system(size: 13, weight: .medium))
+                .font(Theme.Typography.cardTitle)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .foregroundStyle(.primary)
                 .frame(maxWidth: size, alignment: .leading)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.cardSubtitle)
                     .lineLimit(1)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: size, alignment: .leading)

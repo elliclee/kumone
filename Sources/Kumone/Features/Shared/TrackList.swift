@@ -195,23 +195,40 @@ struct TrackRow: View {
         .frame(width: 28)
     }
 
+    @ViewBuilder
     private var likeAndDuration: some View {
-        HStack(spacing: 8) {
-            let liked = account.isLiked(track.id)
-            Button {
-                Task { await account.toggleLike(trackID: track.id) }
+        if isCompact {
+            Menu {
+                contextMenuItems
             } label: {
-                Image(systemName: liked ? "heart.fill" : "heart")
-                    .font(.system(size: 12))
-                    .foregroundStyle(liked ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(.secondary))
+                Image(systemName: "ellipsis")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(
+                        width: Theme.Layout.minimumTouchTarget,
+                        height: Theme.Layout.minimumTouchTarget
+                    )
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(.pressable)
-            .opacity(liked || isHovering ? 1 : 0)
+            .accessibilityLabel("更多操作")
+        } else {
+            HStack(spacing: 8) {
+                let liked = account.isLiked(track.id)
+                Button {
+                    Task { await account.toggleLike(trackID: track.id) }
+                } label: {
+                    Image(systemName: liked ? "heart.fill" : "heart")
+                        .font(.system(size: 12))
+                        .foregroundStyle(liked ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(.secondary))
+                }
+                .buttonStyle(.pressable)
+                .opacity(liked || isHovering ? 1 : 0)
 
-            Text(Formatters.duration(track.duration))
-                .font(.system(size: 11.5).monospacedDigit())
-                .foregroundStyle(.tertiary)
-                .frame(width: 36, alignment: .trailing)
+                Text(Formatters.duration(track.duration))
+                    .font(.system(size: 11.5).monospacedDigit())
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 36, alignment: .trailing)
+            }
         }
     }
 
