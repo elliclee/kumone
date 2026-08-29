@@ -153,7 +153,7 @@ struct HomeView: View {
             }
 
             if !model.recommendPlaylists.isEmpty {
-                Shelf(title: "推荐歌单", rowHeight: Theme.Layout.coverShelfHeight) {
+                Shelf(title: "推荐歌单", rowHeight: Theme.Layout.compactCoverShelfHeight) {
                     ForEach(Array(model.recommendPlaylists.prefix(12).enumerated()), id: \.element.id) { index, playlist in
                         playlistCard(playlist)
                             .staggeredAppearance(index: index, id: "home-rec-\(playlist.id)")
@@ -173,18 +173,18 @@ struct HomeView: View {
                                 playPlaylist(radar.id)
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.interactiveCard)
                     }
                 }
             }
 
             if !model.toplists.isEmpty {
-                Shelf(title: "排行榜", seeAll: nil, rowHeight: Theme.Layout.coverShelfHeight) {
+                Shelf(title: "排行榜", seeAll: nil, rowHeight: Theme.Layout.compactCoverShelfHeight) {
                     ForEach(model.toplists) { toplist in
                         NavigationLink(value: Destination.playlist(toplist.id)) {
                             toplistCard(toplist)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.interactiveCard)
                     }
                 }
             }
@@ -215,8 +215,11 @@ struct HomeView: View {
 
     private var featureCards: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
-                Color.clear.frame(width: max(0, Theme.Layout.contentInset - 16), height: 1)
+            HStack(spacing: Theme.Layout.shelfSpacing) {
+                Color.clear.frame(
+                    width: max(0, Theme.Layout.contentInset - Theme.Layout.shelfSpacing),
+                    height: 1
+                )
                 if account.isLoggedIn {
                     NavigationLink(value: Destination.daily) {
                         FeatureCard(
@@ -227,7 +230,7 @@ struct HomeView: View {
                             showsDate: true
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.interactiveCard)
 
                     Button {
                         player.startFM()
@@ -255,7 +258,10 @@ struct HomeView: View {
                     }
                     .buttonStyle(.interactiveCard)
                 }
-                Color.clear.frame(width: max(0, Theme.Layout.contentInset - 16), height: 1)
+                Color.clear.frame(
+                    width: max(0, Theme.Layout.contentInset - Theme.Layout.shelfSpacing),
+                    height: 1
+                )
             }
             .padding(.vertical, 6)
         }
@@ -287,17 +293,22 @@ struct HomeView: View {
     // MARK: - Cards
 
     private func playlistCard(_ playlist: PlaylistSummary) -> some View {
-        NavigationLink(value: Destination.playlist(playlist.id)) {
+        #if os(iOS)
+        let subtitle: String? = nil
+        #else
+        let subtitle = playlist.copywriter
+        #endif
+        return NavigationLink(value: Destination.playlist(playlist.id)) {
             CoverCardBody(
                 coverURL: playlist.coverURL?.resizedImageURL(384),
                 title: playlist.name,
-                subtitle: playlist.copywriter,
+                subtitle: subtitle,
                 playCount: playlist.playCount
             ) {
                 playPlaylist(playlist.id)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.interactiveCard)
     }
 
     private func albumCard(_ album: AlbumSummary) -> some View {
@@ -315,7 +326,7 @@ struct HomeView: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.interactiveCard)
     }
 
     private func artistCard(_ artist: ArtistSummary) -> some View {
@@ -324,7 +335,9 @@ struct HomeView: View {
                 CachedAsyncImage(url: artist.picUrl?.resizedImageURL(256))
                     .frame(width: 128, height: 128)
                     .clipShape(Circle())
+                    #if os(macOS)
                     .overlay(Circle().strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
+                    #endif
                 Text(artist.name)
                     .font(Theme.Typography.cardTitle)
                     .foregroundStyle(.primary)
@@ -332,7 +345,7 @@ struct HomeView: View {
             }
             .frame(width: 140)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.interactiveCard)
     }
 
     private func toplistCard(_ toplist: ToplistItem) -> some View {
@@ -344,7 +357,7 @@ struct HomeView: View {
                 LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous))
                 Text(toplist.updateFrequency ?? "")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.caption2.weight(.medium))
                     .foregroundStyle(.white.opacity(0.9))
                     .padding(8)
             }
@@ -403,17 +416,17 @@ struct FeatureCard: View {
                         .foregroundStyle(.white)
                     if showsDate {
                         Text("\(Calendar.current.component(.day, from: .now))")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.caption2.weight(.bold))
                             .foregroundStyle(.white)
                             .offset(y: 3)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 Text(title)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.headline)
                     .foregroundStyle(.white)
                 Text(subtitle)
-                    .font(.system(size: 11))
+                    .font(.caption)
                     .foregroundStyle(.white.opacity(0.75))
                     .lineLimit(1)
             }
@@ -422,10 +435,12 @@ struct FeatureCard: View {
         }
         .frame(width: 230, height: 132)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous))
+        #if os(macOS)
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous)
                 .strokeBorder(.white.opacity(0.12), lineWidth: 0.5)
         )
+        #endif
         .contentShape(Rectangle())
     }
 }
@@ -436,51 +451,77 @@ struct CoverCardBody: View {
     let title: String
     var subtitle: String?
     var playCount: Int = 0
-    var size: CGFloat = Theme.Layout.cardSize
+    /// Shelves use a fixed card width; grids pass `nil` so artwork follows the
+    /// two-column system margin exactly on every iPhone width.
+    var size: CGFloat? = Theme.Layout.cardSize
     var onPlay: (() -> Void)?
 
     @State private var isHovering = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ZStack(alignment: .bottomLeading) {
-                CachedAsyncImage(url: coverURL)
-                    .frame(width: size, height: size)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous)
-                            .strokeBorder(.primary.opacity(0.08), lineWidth: 0.5)
-                    )
-                if playCount > 0 {
-                    PlayCountBadge(count: playCount)
-                        .padding(6)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                }
-                if let onPlay {
-                    PlayOverlayButton(visible: isHovering, action: onPlay)
-                        .padding(8)
-                }
-            }
-            .frame(width: size, height: size)
+            sizedArtwork
 
             Text(title)
                 .font(Theme.Typography.cardTitle)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .foregroundStyle(.primary)
-                .frame(maxWidth: size, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
                     .font(Theme.Typography.cardSubtitle)
                     .lineLimit(1)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: size, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(width: size, alignment: .leading)
+        .frame(maxWidth: size == nil ? .infinity : nil, alignment: .leading)
         .contentShape(Rectangle())
         #if os(macOS)
         .onHover { isHovering = $0 }
+        #endif
+    }
+
+    @ViewBuilder
+    private var sizedArtwork: some View {
+        if let size {
+            artwork.frame(width: size, height: size)
+        } else {
+            artwork
+                .aspectRatio(1, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var artwork: some View {
+        ZStack(alignment: .bottomLeading) {
+            coverImage
+            #if os(macOS)
+            if playCount > 0 {
+                PlayCountBadge(count: playCount)
+                    .padding(6)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            }
+            #endif
+            if let onPlay {
+                PlayOverlayButton(visible: isHovering, action: onPlay)
+                    .padding(8)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var coverImage: some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous)
+        #if os(macOS)
+        CachedAsyncImage(url: coverURL)
+            .clipShape(shape)
+            .overlay(shape.strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
+        #else
+        CachedAsyncImage(url: coverURL)
+            .clipShape(shape)
         #endif
     }
 }

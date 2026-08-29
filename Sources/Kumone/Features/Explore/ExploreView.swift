@@ -93,12 +93,13 @@ struct ExploreView: View {
                                 CoverCardBody(
                                     coverURL: playlist.coverURL?.resizedImageURL(384),
                                     title: playlist.name,
-                                    playCount: playlist.playCount
+                                    playCount: playlist.playCount,
+                                    size: nil
                                 ) {
                                     playPlaylist(playlist.id)
                                 }
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.interactiveCard)
                             .staggeredAppearance(index: index % 10, id: "explore-\(playlist.id)")
                         }
                     }
@@ -168,7 +169,55 @@ struct ExploreView: View {
 struct ToplistGrid: View {
     let toplists: [ToplistItem]
 
+    @ViewBuilder
     var body: some View {
+        #if os(iOS)
+        LazyVStack(spacing: 0) {
+            ForEach(toplists) { toplist in
+                NavigationLink(value: Destination.playlist(toplist.id)) {
+                    HStack(spacing: 12) {
+                        CachedAsyncImage(url: toplist.coverImgUrl?.resizedImageURL(192))
+                            .frame(width: 72, height: 72)
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: Theme.Radius.standard,
+                                    style: .continuous
+                                )
+                            )
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(toplist.name)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                            if let frequency = toplist.updateFrequency, !frequency.isEmpty {
+                                Text(frequency)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if let preview = toplist.tracks.first {
+                                Text("1. \(preview.first) – \(preview.second)")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .frame(minHeight: 88)
+                    .contentShape(Rectangle())
+                    .overlay(alignment: .bottom) {
+                        Divider().padding(.leading, 84)
+                    }
+                }
+                .buttonStyle(.interactiveRow)
+            }
+        }
+        #else
         LazyVGrid(
             columns: [GridItem(.adaptive(minimum: 300, maximum: 420), spacing: 20)],
             alignment: .leading, spacing: 20
@@ -206,6 +255,7 @@ struct ToplistGrid: View {
                 .buttonStyle(.plain)
             }
         }
+        #endif
     }
 }
 

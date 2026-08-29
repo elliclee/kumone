@@ -5,6 +5,7 @@ struct InteractiveCardStyle: ButtonStyle {
     var showShadow = true
     var hoverScale: CGFloat = 1.02
     var pressScale: CGFloat = 0.98
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     #if os(macOS)
     @State private var isHovering = false
@@ -25,7 +26,9 @@ struct InteractiveCardStyle: ButtonStyle {
             .onHover { isHovering = $0 }
         #else
         configuration.label
-            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? pressScale : 1)
+            .opacity(configuration.isPressed ? 0.72 : 1.0)
+            .animation(reduceMotion ? nil : AppAnimation.quick, value: configuration.isPressed)
         #endif
     }
 }
@@ -84,6 +87,7 @@ struct PressableButtonStyle: ButtonStyle {
 /// Filter chips (category pickers).
 struct ChipButtonStyle: ButtonStyle {
     var isSelected: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     #if os(macOS)
     @State private var isHovering = false
@@ -120,8 +124,9 @@ struct ChipButtonStyle: ButtonStyle {
                 )
             )
             .foregroundStyle(isSelected ? .white : .primary)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(AppAnimation.spring, value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1.0)
+            .opacity(configuration.isPressed ? 0.78 : 1)
+            .animation(reduceMotion ? nil : AppAnimation.quick, value: configuration.isPressed)
             .frame(minHeight: Theme.Layout.minimumTouchTarget)
             .contentShape(Rectangle())
             .accessibilityAddTraits(isSelected ? .isSelected : [])

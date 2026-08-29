@@ -355,6 +355,7 @@ struct IOSMiniPlayerBar: View {
 
         var isInline: Bool { self == .inlineAccessory }
         var drawsBackground: Bool { self == .legacyOverlay }
+        var showsArtist: Bool { self == .legacyOverlay }
     }
 
     @EnvironmentObject private var player: PlayerService
@@ -425,8 +426,8 @@ struct IOSMiniPlayerBar: View {
                 .accessibilityLabel("下一首")
             }
         }
-        .padding(.leading, 12)
-        .padding(.trailing, 6)
+        .padding(.leading, 10)
+        .padding(.trailing, 4)
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
     }
@@ -439,7 +440,11 @@ struct IOSMiniPlayerBar: View {
                     height: artworkSize
                 )
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 1)
+                .shadow(
+                    color: presentation.drawsBackground ? .black.opacity(0.15) : .clear,
+                    radius: 4,
+                    y: 1
+                )
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(player.currentTrack?.name ?? "")
@@ -447,7 +452,7 @@ struct IOSMiniPlayerBar: View {
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                if !presentation.isInline {
+                if presentation.showsArtist {
                     Text(player.currentTrack?.artistNames ?? "")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -465,7 +470,7 @@ struct IOSMiniPlayerBar: View {
     }
 
     private var titleFont: Font {
-        presentation.isInline ? .caption.weight(.semibold) : .subheadline.weight(.semibold)
+        presentation.isInline ? .caption.weight(.semibold) : .subheadline
     }
 
     private var nowPlayingAccessibilityLabel: String {
@@ -509,9 +514,8 @@ struct IOSLibraryView: View {
 
     var body: some View {
         List {
-            // Profile / Login header
-            Section {
-                if let profile = account.profile {
+            if let profile = account.profile {
+                Section {
                     HStack(spacing: 14) {
                         CachedAsyncImage(url: profile.avatarUrl?.resizedImageURL(128))
                             .frame(width: 52, height: 52)
@@ -532,48 +536,29 @@ struct IOSLibraryView: View {
                             }
                         }
                     }
-                    .padding(.vertical, 4)
-                } else {
-                    Button {
-                        showLogin = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "person.crop.circle.badge.plus")
-                                .font(.system(size: 32))
-                                .foregroundStyle(Theme.accent)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("登录网易云音乐")
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                Text("同步我喜欢的音乐、歌单与每日推荐")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.vertical, 6)
-                    }
+                    .frame(minHeight: 64)
+                    .listRowSeparator(.hidden)
                 }
             }
 
             if account.hasAuthCookie {
-                Section("我的音乐") {
+                Section {
                     if let liked = account.likedSongsPlaylist {
                         NavigationLink(value: Destination.playlist(liked.id)) {
-                            Label("我喜欢的音乐", systemImage: "heart.fill")
-                                .foregroundStyle(Theme.accent)
+                            LibraryDestinationRow(title: "我喜欢的音乐", icon: "heart.fill")
                         }
                     }
                     NavigationLink(value: Destination.daily) {
-                        Label("每日推荐", systemImage: "calendar")
+                        LibraryDestinationRow(title: "每日推荐", icon: "calendar")
                     }
                     NavigationLink(value: Destination.recents) {
-                        Label("最近播放", systemImage: "clock.fill")
+                        LibraryDestinationRow(title: "最近播放", icon: "clock.fill")
                     }
                     NavigationLink(value: Destination.collections) {
-                        Label("我的收藏", systemImage: "star.fill")
+                        LibraryDestinationRow(title: "我的收藏", icon: "star.fill")
                     }
                     NavigationLink(value: Destination.cloud) {
-                        Label("音乐云盘", systemImage: "icloud.fill")
+                        LibraryDestinationRow(title: "音乐云盘", icon: "icloud.fill")
                     }
                 }
 
@@ -581,58 +566,35 @@ struct IOSLibraryView: View {
                     Section {
                         ForEach(account.createdPlaylists) { playlist in
                             NavigationLink(value: Destination.playlist(playlist.id)) {
-                                HStack(spacing: 10) {
-                                    CachedAsyncImage(url: playlist.coverURL?.resizedImageURL(80), animated: false)
-                                        .frame(width: 32, height: 32)
-                                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        Text(playlist.name)
-                                            .font(.system(size: 14))
-                                            .lineLimit(1)
-                                        Text("\(playlist.trackCount) 首")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
+                                playlistRow(playlist)
                             }
                         }
                     } header: {
-                        HStack {
-                            Text("创建的歌单")
-                            Spacer()
-                            Button {
-                                showNewPlaylist = true
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 13, weight: .semibold))
-                            }
-                        }
+                        playlistHeader(title: "创建的歌单", showsAddButton: true)
                     }
                 }
 
                 if !account.subscribedPlaylists.isEmpty {
-                    Section("收藏的歌单") {
+                    Section {
                         ForEach(account.subscribedPlaylists) { playlist in
                             NavigationLink(value: Destination.playlist(playlist.id)) {
-                                HStack(spacing: 10) {
-                                    CachedAsyncImage(url: playlist.coverURL?.resizedImageURL(80), animated: false)
-                                        .frame(width: 32, height: 32)
-                                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        Text(playlist.name)
-                                            .font(.system(size: 14))
-                                            .lineLimit(1)
-                                        Text("\(playlist.trackCount) 首")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
+                                playlistRow(playlist)
                             }
                         }
+                    } header: {
+                        playlistHeader(title: "收藏的歌单", showsAddButton: false)
                     }
+                }
+            } else {
+                Section {
+                    signedOutState
+                        .frame(maxWidth: .infinity, minHeight: 480)
+                        .listRowSeparator(.hidden)
                 }
             }
         }
+        .listStyle(.plain)
+        .environment(\.defaultMinListRowHeight, Theme.Layout.minimumTouchTarget)
         .navigationTitle("我的")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -674,6 +636,110 @@ struct IOSLibraryView: View {
             }
             Button("取消", role: .cancel) { newPlaylistName = "" }
         }
+    }
+
+    private func playlistRow(_ playlist: PlaylistSummary) -> some View {
+        HStack(spacing: 12) {
+            CachedAsyncImage(url: playlist.coverURL?.resizedImageURL(96), animated: false)
+                .frame(width: 44, height: 44)
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: Theme.Radius.small,
+                        style: .continuous
+                    )
+                )
+            VStack(alignment: .leading, spacing: 2) {
+                Text(playlist.name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Text("\(playlist.trackCount) 首")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(minHeight: 56)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 56 }
+    }
+
+    @ViewBuilder
+    private var signedOutState: some View {
+        if #available(iOS 17.0, *) {
+            ContentUnavailableView {
+                Label("登录网易云音乐", systemImage: "person.crop.circle")
+            } description: {
+                Text("同步我喜欢的音乐、歌单与每日推荐")
+            } actions: {
+                Button("登录") {
+                    showLogin = true
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        } else {
+            VStack(spacing: 12) {
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 44))
+                    .foregroundStyle(.secondary)
+                Text("登录网易云音乐")
+                    .font(.title3.weight(.semibold))
+                Text("同步我喜欢的音乐、歌单与每日推荐")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Button("登录") {
+                    showLogin = true
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    private func playlistHeader(
+        title: LocalizedStringKey,
+        showsAddButton: Bool
+    ) -> some View {
+        HStack {
+            Text(title)
+                .font(Theme.Typography.sectionTitle)
+                .foregroundStyle(.primary)
+                .textCase(nil)
+            Spacer()
+            if showsAddButton {
+                Button {
+                    showNewPlaylist = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.body.weight(.semibold))
+                        .frame(
+                            width: Theme.Layout.minimumTouchTarget,
+                            height: Theme.Layout.minimumTouchTarget
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("新建歌单")
+            }
+        }
+    }
+}
+
+private struct LibraryDestinationRow: View {
+    let title: LocalizedStringKey
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body.weight(.medium))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 24)
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+            Spacer(minLength: 0)
+        }
+        .frame(minHeight: Theme.Layout.minimumTouchTarget)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 36 }
     }
 }
 #endif

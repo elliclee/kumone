@@ -194,12 +194,12 @@ struct SearchView: View {
             .padding(.horizontal, Theme.Layout.contentInset)
         case .albums:
             CardGrid {
-                albumCards(model.albums)
+                albumCards(model.albums, fluid: true)
             }
             .padding(.horizontal, Theme.Layout.contentInset)
         case .playlists:
             CardGrid {
-                playlistCards(model.playlists)
+                playlistCards(model.playlists, fluid: true)
             }
             .padding(.horizontal, Theme.Layout.contentInset)
         }
@@ -225,7 +225,10 @@ struct SearchView: View {
         }
     }
 
-    private func albumCards(_ items: some Collection<AlbumSummary>) -> some View {
+    private func albumCards(
+        _ items: some Collection<AlbumSummary>,
+        fluid: Bool = false
+    ) -> some View {
         ForEach(Array(items)) { album in
             NavigationLink {
                 AlbumDetailView(albumID: album.id)
@@ -233,14 +236,18 @@ struct SearchView: View {
                 CoverCardBody(
                     coverURL: album.picUrl?.resizedImageURL(384),
                     title: album.name,
-                    subtitle: album.artistName
+                    subtitle: album.artistName,
+                    size: fluid ? nil : Theme.Layout.cardSize
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.interactiveCard)
         }
     }
 
-    private func playlistCards(_ items: some Collection<PlaylistSummary>) -> some View {
+    private func playlistCards(
+        _ items: some Collection<PlaylistSummary>,
+        fluid: Bool = false
+    ) -> some View {
         ForEach(Array(items)) { playlist in
             NavigationLink {
                 PlaylistDetailView(playlistID: playlist.id)
@@ -248,10 +255,11 @@ struct SearchView: View {
                 CoverCardBody(
                     coverURL: playlist.coverURL?.resizedImageURL(384),
                     title: playlist.name,
-                    playCount: playlist.playCount
+                    playCount: playlist.playCount,
+                    size: fluid ? nil : Theme.Layout.cardSize
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.interactiveCard)
         }
     }
 }

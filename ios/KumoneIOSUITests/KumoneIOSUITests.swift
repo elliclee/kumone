@@ -16,16 +16,16 @@ final class KumoneIOSUITests: XCTestCase {
             dismissUpdate.tap()
         }
 
+        XCTAssertTrue(app.navigationBars["推荐"].waitForExistence(timeout: 5))
+        captureScreen(named: "Home-iPhone")
+
         tapPrimaryTab(named: "精选", fallbackX: 0.32, in: app)
         XCTAssertTrue(app.navigationBars["精选"].waitForExistence(timeout: 5))
-
-        let exploreScreenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        exploreScreenshot.name = "Explore-iPhone"
-        exploreScreenshot.lifetime = .keepAlways
-        add(exploreScreenshot)
+        captureScreen(named: "Explore-iPhone")
 
         tapPrimaryTab(named: "我的", fallbackX: 0.67, in: app)
         XCTAssertTrue(app.navigationBars["我的"].waitForExistence(timeout: 5))
+        captureScreen(named: "Library-iPhone")
     }
 
     /// iOS 26's floating TabView can expose a tab button before XCTest has a
@@ -41,5 +41,12 @@ final class KumoneIOSUITests: XCTestCase {
         } else {
             app.coordinate(withNormalizedOffset: CGVector(dx: fallbackX, dy: 0.94)).tap()
         }
+    }
+
+    private func captureScreen(named name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 }

@@ -44,7 +44,8 @@ struct CollectionsView: View {
                                         CoverCardBody(
                                             coverURL: album.picUrl?.resizedImageURL(384),
                                             title: album.name,
-                                            subtitle: album.artistName
+                                            subtitle: album.artistName,
+                                            size: nil
                                         )
                                     }
                                     .buttonStyle(.interactiveCard)

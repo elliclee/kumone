@@ -70,7 +70,13 @@ struct StaggeredAppearanceModifier: ViewModifier {
 
     @State private var isVisible = false
 
+    @ViewBuilder
     func body(content: Content) -> some View {
+        #if os(iOS)
+        // Music-style feeds arrive as a stable surface. Per-card choreography
+        // makes a utility feed feel authored instead of native.
+        content
+        #else
         content
             .opacity(isVisible ? 1 : 0)
             .offset(y: isVisible ? 0 : 16)
@@ -85,6 +91,7 @@ struct StaggeredAppearanceModifier: ViewModifier {
                 }
                 AnimationCache.markAnimated(itemID)
             }
+        #endif
     }
 }
 
@@ -116,6 +123,9 @@ struct SectionHeader: View {
                             .foregroundStyle(.tertiary)
                             .offset(x: isHovering ? 2 : 0)
                     }
+                    #if os(iOS)
+                    .frame(minHeight: Theme.Layout.minimumTouchTarget)
+                    #endif
                 }
                 .buttonStyle(.plain)
                 .onHover { hovering in
@@ -132,9 +142,6 @@ struct SectionHeader: View {
             }
             Spacer()
         }
-        #if os(iOS)
-        .frame(minHeight: Theme.Layout.minimumTouchTarget)
-        #endif
     }
 }
 

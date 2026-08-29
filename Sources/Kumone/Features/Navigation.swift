@@ -123,7 +123,14 @@ extension View {
 struct PlayerClearanceSpacer: View {
     var body: some View {
         #if os(iOS)
-        Color.clear.frame(height: 80) // mini player bar above the tab bar
+        if #available(iOS 26.0, *) {
+            // Native TabView and its bottom accessory already participate in
+            // the scroll safe area. A second 80pt spacer makes the feed feel
+            // conspicuously emptier than Music.
+            Color.clear.frame(height: 8)
+        } else {
+            Color.clear.frame(height: 80) // compatibility overlay
+        }
         #else
         Color.clear.frame(height: Theme.Layout.playerChromeClearance + 8)
         #endif

@@ -17,18 +17,15 @@ struct CoverCard: View {
         Button(action: onOpen) {
             VStack(alignment: .leading, spacing: 8) {
                 ZStack(alignment: .bottomLeading) {
-                    CachedAsyncImage(url: coverURL)
+                    coverArtwork
                         .frame(width: size, height: size)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous)
-                                .strokeBorder(.primary.opacity(0.08), lineWidth: 0.5)
-                        )
+                    #if os(macOS)
                     if playCount > 0 {
                         PlayCountBadge(count: playCount)
                             .padding(6)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     }
+                    #endif
                     if let onPlay {
                         PlayOverlayButton(visible: isHovering, action: onPlay)
                             .padding(8)
@@ -54,6 +51,19 @@ struct CoverCard: View {
         .buttonStyle(.interactiveCard)
         .onHover { isHovering = $0 }
     }
+
+    @ViewBuilder
+    private var coverArtwork: some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.Radius.standard, style: .continuous)
+        #if os(macOS)
+        CachedAsyncImage(url: coverURL)
+            .clipShape(shape)
+            .overlay(shape.strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
+        #else
+        CachedAsyncImage(url: coverURL)
+            .clipShape(shape)
+        #endif
+    }
 }
 
 // MARK: - Artist card (circular)
@@ -69,7 +79,9 @@ struct ArtistCard: View {
                 CachedAsyncImage(url: artist.picUrl?.resizedImageURL(256))
                     .frame(width: size, height: size)
                     .clipShape(Circle())
+                    #if os(macOS)
                     .overlay(Circle().strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
+                    #endif
                 Text(artist.name)
                     .font(Theme.Typography.cardTitle)
                     .lineLimit(1)
@@ -89,7 +101,7 @@ struct ArtistCard: View {
 struct Shelf<Content: View>: View {
     let title: LocalizedStringKey
     var seeAll: (() -> Void)?
-    var spacing: CGFloat = 16
+    var spacing: CGFloat = Theme.Layout.shelfSpacing
     /// Height of one row of cards.
     ///
     /// Supplying it lets the shelf build its cards lazily, which matters more
@@ -121,7 +133,7 @@ struct Shelf<Content: View>: View {
 
     private var headerSpacing: CGFloat {
         #if os(iOS)
-        return 4
+        return 8
         #else
         return 14
         #endif
@@ -158,12 +170,25 @@ struct CardGrid<Content: View>: View {
 
     var body: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: minWidth, maximum: minWidth + 40),
-                               spacing: 20, alignment: .top)],
+            columns: columns,
             alignment: .leading, spacing: 24
         ) {
             content()
         }
+    }
+
+    private var columns: [GridItem] {
+        #if os(iOS)
+        return [
+            GridItem(.flexible(), spacing: Theme.Layout.gridSpacing, alignment: .topLeading),
+            GridItem(.flexible(), spacing: Theme.Layout.gridSpacing, alignment: .topLeading),
+        ]
+        #else
+        return [
+            GridItem(.adaptive(minimum: minWidth, maximum: minWidth + 40),
+                     spacing: Theme.Layout.gridSpacing, alignment: .top)
+        ]
+        #endif
     }
 }
 

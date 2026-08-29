@@ -2,9 +2,22 @@ import SwiftUI
 
 /// Design tokens: color, radius, spacing, layout metrics.
 enum Theme {
-    /// NetEase red, tuned slightly warmer for macOS.
-    static let accent = Color(red: 0.925, green: 0.286, blue: 0.286) // #EC4949
-    static let accentDeep = Color(red: 0.788, green: 0.161, blue: 0.161) // #C92929
+    /// iOS uses the clearer pink-red associated with Music and system media
+    /// controls. macOS keeps Kumone's original, slightly warmer brand red.
+    static let accent: Color = {
+        #if os(iOS)
+        return Color(red: 0.98, green: 0.15, blue: 0.27) // #FA2645
+        #else
+        return Color(red: 0.925, green: 0.286, blue: 0.286) // #EC4949
+        #endif
+    }()
+    static let accentDeep: Color = {
+        #if os(iOS)
+        return Color(red: 0.82, green: 0.08, blue: 0.19)
+        #else
+        return Color(red: 0.788, green: 0.161, blue: 0.161) // #C92929
+        #endif
+    }()
 
     static let accentGradient = LinearGradient(
         colors: [Color(red: 0.973, green: 0.357, blue: 0.357), accentDeep],
@@ -30,7 +43,7 @@ enum Theme {
 
         static var cardTitle: Font {
             #if os(iOS)
-            return .footnote.weight(.medium)
+            return .subheadline
             #else
             return .system(size: 13, weight: .medium)
             #endif
@@ -38,7 +51,7 @@ enum Theme {
 
         static var cardSubtitle: Font {
             #if os(iOS)
-            return .caption2
+            return .footnote
             #else
             return .system(size: 11)
             #endif
@@ -58,15 +71,43 @@ enum Theme {
         static let minimumTouchTarget: CGFloat = 44
         static let sectionSpacing: CGFloat = {
             #if os(iOS)
-            return 32
+            return 24
             #else
             return 34
+            #endif
+        }()
+        static let shelfSpacing: CGFloat = {
+            #if os(iOS)
+            return 12
+            #else
+            return 16
+            #endif
+        }()
+        static let gridSpacing: CGFloat = {
+            #if os(iOS)
+            return 12
+            #else
+            return 20
             #endif
         }()
         static let cardSize: CGFloat = 160
         /// Row height for a shelf of cover cards: artwork, then up to two lines
         /// of title and one of subtitle.
-        static let coverShelfHeight: CGFloat = 226
+        static let coverShelfHeight: CGFloat = {
+            #if os(iOS)
+            return 232
+            #else
+            return 226
+            #endif
+        }()
+        /// Artwork plus a two-line title, without a subtitle row.
+        static let compactCoverShelfHeight: CGFloat = {
+            #if os(iOS)
+            return 206
+            #else
+            return coverShelfHeight
+            #endif
+        }()
         /// Row height for a shelf of artist cards: circular artwork, one name.
         static let artistShelfHeight: CGFloat = 196
         static let sidebarWidth: CGFloat = 220
