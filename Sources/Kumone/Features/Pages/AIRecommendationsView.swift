@@ -56,36 +56,50 @@ struct AIRecommendationsView: View {
     }
 
     private var hero: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(.white)
-                    .frame(width: 52, height: 52)
-                    .background(
-                        LinearGradient(
-                            colors: [Color(red: 0.35, green: 0.23, blue: 0.78),
-                                     Color(red: 0.77, green: 0.25, blue: 0.58)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        in: RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    )
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("让 AI 从红心歌曲里读懂你的口味")
-                        .font(.title3.weight(.semibold))
-                    Text("只发送歌名和歌手，推荐结果会匹配到网易云曲库")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 5) {
+                Label {
+                    Text("根据你的红心歌曲生成推荐")
+                } icon: {
+                    Image(systemName: "sparkles")
+                        .foregroundStyle(Theme.accent)
                 }
+                .font(.headline)
+
+                Text("Kumone 只会将歌名和歌手发送给 DeepSeek，并匹配网易云曲库。")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
-            TextField("此刻想听什么？例如：适合雨夜通勤（可选）", text: $model.mood)
-                .textFieldStyle(.roundedBorder)
-                .disabled(model.isLoading)
+            HStack(spacing: 10) {
+                Image(systemName: "sparkles")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.tertiary)
+
+                TextField("描述此刻想听的音乐（可选）", text: $model.mood)
+                    .textFieldStyle(.plain)
+                    .submitLabel(.done)
+                    .disabled(model.isLoading)
+
+                if !model.mood.isEmpty, !model.isLoading {
+                    Button {
+                        model.mood = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.tertiary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("清除听歌描述")
+                }
+            }
+            .padding(.horizontal, 12)
+            .frame(minHeight: Theme.Layout.minimumTouchTarget)
+            .background(
+                Color.primary.opacity(0.055),
+                in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+            )
         }
-        .padding(18)
-        .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
     @ViewBuilder
@@ -118,6 +132,7 @@ struct AIRecommendationsView: View {
 
     private var setupCard: some View {
         VStack(alignment: .leading, spacing: 12) {
+            Divider()
             Text("连接 DeepSeek")
                 .font(.headline)
             Text("使用你自己的 API Key。Key 会保存在系统钥匙串中，不会发送给网易云音乐。")
@@ -127,8 +142,7 @@ struct AIRecommendationsView: View {
                 hasAPIKey = configured
             }
         }
-        .padding(18)
-        .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(.top, 4)
     }
 
     private var generatePrompt: some View {
@@ -181,17 +195,18 @@ struct AIRecommendationsView: View {
 
     private func resultView(_ result: AIRecommendationResult) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("AI 的口味观察")
-                    .font(.headline)
-                Text(result.summary)
-                    .font(.subheadline)
+            VStack(alignment: .leading, spacing: 8) {
+                Label("AI 的口味观察", systemImage: "waveform")
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
+                Text(result.summary)
+                    .font(.body)
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+            Divider()
 
             HStack {
                 Text("为你推荐")
@@ -204,15 +219,20 @@ struct AIRecommendationsView: View {
                     player.play(tracks: result.tracks.map(\.track), source: .none)
                 } label: {
                     Label("播放全部", systemImage: "play.fill")
+                        .font(.subheadline.weight(.semibold))
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+                .buttonStyle(.plain)
+                .foregroundStyle(Theme.accent)
                 Button {
                     Task { await model.generate(likedTrackIDs: account.likedTrackIDs) }
                 } label: {
                     Image(systemName: "arrow.clockwise")
+                        .font(.subheadline.weight(.semibold))
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.plain)
+                .foregroundStyle(Theme.accent)
+                .frame(width: Theme.Layout.minimumTouchTarget,
+                       height: Theme.Layout.minimumTouchTarget)
                 .accessibilityLabel("刷新推荐")
             }
 

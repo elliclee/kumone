@@ -59,6 +59,10 @@
 "心动模式暂时不可用" = "Heartbeat Mode is unavailable right now";
 "已开启心动模式" = "Heartbeat Mode enabled";
 "DeepSeek 读懂你的音乐口味" = "Let DeepSeek read your music taste";
+"根据你的红心歌曲生成推荐" = "Recommendations from your liked songs";
+"Kumone 只会将歌名和歌手发送给 DeepSeek，并匹配网易云曲库。" = "Kumone sends only song titles and artists to DeepSeek, then matches the NetEase catalog.";
+"描述此刻想听的音乐（可选）" = "Describe what you want to hear (optional)";
+"清除听歌描述" = "Clear listening description";
 
 /* AI recommendations */
 "让 AI 从红心歌曲里读懂你的口味" = "Let AI learn from your liked songs";
