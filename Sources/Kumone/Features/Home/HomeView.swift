@@ -221,6 +221,17 @@ struct HomeView: View {
                     height: 1
                 )
                 if account.isLoggedIn {
+                    NavigationLink(value: Destination.aiRecommendations) {
+                        FeatureCard(
+                            title: "AI 猜你喜欢",
+                            subtitle: "DeepSeek 读懂你的音乐口味",
+                            icon: "sparkles",
+                            gradient: [Color(red: 0.35, green: 0.23, blue: 0.78),
+                                       Color(red: 0.77, green: 0.25, blue: 0.58)]
+                        )
+                    }
+                    .buttonStyle(.interactiveCard)
+
                     NavigationLink(value: Destination.daily) {
                         FeatureCard(
                             title: "每日推荐",

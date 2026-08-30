@@ -13,6 +13,7 @@ struct SidebarView: View {
         List {
             Section {
                 row(.home, title: "推荐", icon: "house.fill")
+                row(.aiRecommendations, title: "AI 猜你喜欢", icon: "sparkles")
                 row(.explore, title: "精选", icon: "square.grid.2x2.fill")
                 row(.fm, title: "漫游", icon: "wave.3.right.circle.fill")
             }

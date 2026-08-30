@@ -16,6 +16,7 @@
 "退出登录" = "Sign Out";
 "登录网易云音乐" = "Sign in to NetEase Cloud Music";
 "登录" = "Sign In";
+"AI 猜你喜欢" = "AI Picks";
 
 /* Playback menu & player bar */
 "播放" = "Play";
@@ -57,6 +58,42 @@
 "先收藏一些喜欢的歌曲吧" = "Like some songs first";
 "心动模式暂时不可用" = "Heartbeat Mode is unavailable right now";
 "已开启心动模式" = "Heartbeat Mode enabled";
+"DeepSeek 读懂你的音乐口味" = "Let DeepSeek read your music taste";
+
+/* AI recommendations */
+"让 AI 从红心歌曲里读懂你的口味" = "Let AI learn from your liked songs";
+"只发送歌名和歌手，推荐结果会匹配到网易云曲库" = "Only song titles and artists are sent; picks are matched to the NetEase catalog";
+"此刻想听什么？例如：适合雨夜通勤（可选）" = "What do you want to hear? e.g. rainy-night commute (optional)";
+"登录后才能分析你的红心歌曲" = "Sign in to analyze your liked songs";
+"至少收藏 3 首歌曲后再来试试" = "Like at least 3 songs first";
+"连接 DeepSeek" = "Connect DeepSeek";
+"使用你自己的 API Key。Key 会保存在系统钥匙串中，不会发送给网易云音乐。" = "Use your own API key. It is stored in Keychain and never sent to NetEase Cloud Music.";
+"将随机选取最多 40 首红心歌曲分析" = "Up to 40 liked songs will be sampled";
+"每次生成都会调用一次 DeepSeek API，并可能产生少量费用。" = "Each generation calls the DeepSeek API and may incur a small charge.";
+"生成我的推荐" = "Generate My Picks";
+"AI 正在寻找你可能喜欢的歌…" = "AI is finding songs you may like…";
+"生成推荐并匹配曲库通常需要十几秒" = "Generating and matching catalog results usually takes several seconds";
+"重新配置 API Key" = "Configure API Key Again";
+"AI 的口味观察" = "AI Taste Notes";
+"为你推荐" = "Picked for You";
+"刷新推荐" = "Refresh recommendations";
+"已配置，输入新 Key 可替换" = "Configured — enter a new key to replace";
+"已安全保存" = "Stored securely";
+"移除" = "Remove";
+"替换" = "Replace";
+"保存" = "Save";
+"AI 推荐" = "AI Recommendations";
+"API Key 仅保存在系统钥匙串。生成推荐时，会把最多 40 首红心歌曲的歌名和歌手发送给 DeepSeek。" = "The API key is stored only in Keychain. Up to 40 liked song titles and artists are sent to DeepSeek when generating picks.";
+"请先配置 DeepSeek API Key" = "Configure a DeepSeek API key first";
+"DeepSeek 返回了无法识别的结果，请重试" = "DeepSeek returned an unrecognized result; please retry";
+"DeepSeek API Key 无效" = "The DeepSeek API key is invalid";
+"DeepSeek 账户余额不足" = "The DeepSeek account has insufficient balance";
+"DeepSeek 请求过于频繁，请稍后重试" = "Too many DeepSeek requests; please try again later";
+"DeepSeek 没有返回推荐，请再试一次" = "DeepSeek returned no recommendations; please try again";
+"至少收藏 3 首歌曲后，AI 才能猜出你的口味" = "Like at least 3 songs before AI can learn your taste";
+"AI 的推荐暂时没有匹配到网易云曲库，请再试一次" = "No AI picks matched the NetEase catalog; please try again";
+"DeepSeek API Key 已保存" = "DeepSeek API key saved";
+"DeepSeek API Key 已移除" = "DeepSeek API key removed";
 
 /* Explore categories */
 "全部" = "All";

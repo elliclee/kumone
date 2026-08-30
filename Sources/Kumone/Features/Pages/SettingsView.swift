@@ -73,6 +73,13 @@ struct SettingsView: View {
                 }
             }
 
+            Section("AI 推荐") {
+                DeepSeekCredentialEditor()
+                Text("API Key 仅保存在系统钥匙串。生成推荐时，会把最多 40 首红心歌曲的歌名和歌手发送给 DeepSeek。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("更新") {
                 Toggle("启动时自动检查更新", isOn: $settings.autoCheckUpdates)
                 Text("关闭后启动不再自动弹出更新提示，仍可手动检查更新")
@@ -99,7 +106,7 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         #if os(macOS)
-        .frame(width: 440, height: 480)
+        .frame(width: 440, height: 560)
         #endif
         .task { updateCacheSize() }
     }

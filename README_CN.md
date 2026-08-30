@@ -39,6 +39,7 @@ SwiftUI 编写 · 直连网易云真实 API · Sparkle 自动更新
 
 - 🔐 **扫码登录** — 网易云 App 扫码，Cookie 本地持久化，自动续期
 - 🏠 **推荐** — 每日推荐、私人漫游、心动模式、推荐歌单、雷达歌单（私人雷达系列，按账号个性化）、排行榜、新碟上架、推荐歌手
+- ✨ **AI 猜你喜欢** — 使用自己的 DeepSeek API Key 分析红心歌曲，生成带理由的个性推荐并自动匹配网易云曲库（Key 存于系统钥匙串）
 - 🧭 **精选** — 分类歌单（精品 / 官方 / 排行榜 / 场景分类）无限滚动
 - 🎵 **播放** — AVPlayer 引擎，标准 ~ Hi-Res 音质可选（黑胶 VIP 可播无损，自动回落），随机 / 单曲循环 / 列表循环，下一首播放队列，灰色歌曲识别
 - 🔓 **灰色歌曲解锁** — 原生实现 UnblockNeteaseMusic 核心音源（pyncmd / 酷我 / 酷狗），无版权或试听歌曲自动匹配第三方音源
@@ -103,7 +104,7 @@ Sources/Kumone/
 └── Features/           # 各页面 + 播放条 + 沉浸播放页 + 歌词/队列面板
 ```
 
-不依赖任何第三方 API 服务器：weapi（AES-CBC 双层 + RSA）与 eapi（AES-ECB + MD5 摘要）加密为原生 Swift 实现，请求直达 `music.163.com` / `interface.music.163.com`。
+核心音乐能力不依赖第三方中转服务器：weapi（AES-CBC 双层 + RSA）与 eapi（AES-ECB + MD5 摘要）加密为原生 Swift 实现，请求直达 `music.163.com` / `interface.music.163.com`。可选的“AI 猜你喜欢”由客户端直连 DeepSeek，使用用户自己的 API Key。
 
 ## 相关项目
 

@@ -48,6 +48,7 @@ struct PlayerChromeModifier: ViewModifier {
 
 enum SidebarItem: Hashable {
     case home
+    case aiRecommendations
     case explore
     case fm
     case likedSongs
@@ -59,6 +60,7 @@ enum SidebarItem: Hashable {
 }
 
 enum Destination: Hashable {
+    case aiRecommendations
     case playlist(Int)
     case album(Int)
     case artist(Int)
@@ -76,6 +78,8 @@ struct DestinationsModifier: ViewModifier {
         content.navigationDestination(for: Destination.self) { destination in
             Group {
                 switch destination {
+                case .aiRecommendations:
+                    AIRecommendationsView()
                 case .playlist(let id):
                     PlaylistDetailView(playlistID: id)
                 case .album(let id):

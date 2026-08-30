@@ -113,6 +113,8 @@ struct MainWindow: View {
         switch selection {
         case .home:
             HomeView()
+        case .aiRecommendations:
+            AIRecommendationsView()
         case .explore:
             ExploreView()
         case .fm:
