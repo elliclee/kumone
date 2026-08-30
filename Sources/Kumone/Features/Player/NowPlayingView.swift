@@ -7,6 +7,7 @@ struct NowPlayingView: View {
     @ObservedObject private var lyricsCursor = PlayerService.shared.lyricsCursor
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var settings: SettingsManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     #if os(iOS)
     @Environment(\.dismissNowPlayingAction) private var dismissNowPlayingAction
     @Environment(\.dismissNowPlayingDragAction) private var dismissNowPlayingDragAction
@@ -27,7 +28,10 @@ struct NowPlayingView: View {
                 backdrop
 
                 if isCompact {
-                    compactLayout(size: geo.size)
+                    compactLayout(
+                        size: geo.size,
+                        safeAreaInsets: geo.safeAreaInsets
+                    )
                 } else {
                     regularLayout(size: geo.size)
                 }
@@ -94,11 +98,13 @@ struct NowPlayingView: View {
         }
         #if os(iOS)
         .onAppear {
-            showLyricsOnMobile = settings.nowPlayingMode == .immersive
+            // The panoramic artwork is the entry state for every compact
+            // player. Lyrics remain one tap away in the secondary controls.
+            showLyricsOnMobile = false
             showQueueOnMobile = false
         }
         .onChange(of: settings.nowPlayingMode) { _ in
-            showLyricsOnMobile = settings.nowPlayingMode == .immersive
+            showLyricsOnMobile = false
             showQueueOnMobile = false
         }
         .onChange(of: player.currentTrack?.id) { _ in
@@ -208,7 +214,10 @@ struct NowPlayingView: View {
     }
 
     @ViewBuilder
-    private func compactLayout(size: CGSize) -> some View {
+    private func compactLayout(
+        size: CGSize,
+        safeAreaInsets: EdgeInsets
+    ) -> some View {
         #if os(iOS)
         switch settings.nowPlayingMode {
         case .vinyl:
@@ -216,7 +225,10 @@ struct NowPlayingView: View {
         case .classic:
             classicCompactLayout(size: size)
         case .immersive:
-            immersiveCompactLayout(size: size)
+            immersiveCompactLayout(
+                size: size,
+                safeAreaInsets: safeAreaInsets
+            )
         case .minimal:
             minimalCompactLayout(size: size)
         }
@@ -361,59 +373,194 @@ struct NowPlayingView: View {
     }
 
     #if os(iOS)
-    private func immersiveCompactLayout(size: CGSize) -> some View {
-        let artworkDimension = min(size.width - 112, size.height * 0.3, 250)
-        let showsExpandedArtwork = !showLyricsOnMobile && !showQueueOnMobile
+    private func immersiveCompactLayout(
+        size: CGSize,
+        safeAreaInsets: EdgeInsets
+    ) -> some View {
+        let showsArtworkScene = !showLyricsOnMobile && !showQueueOnMobile
+        let canvasSize = ImmersivePanoramaMetrics.canvasSize(
+            contentSize: size,
+            safeAreaInsets: safeAreaInsets
+        )
+        let canvasOffset = ImmersivePanoramaMetrics.canvasOffset(
+            safeAreaInsets: safeAreaInsets
+        )
 
-        return VStack(spacing: 0) {
+        return ZStack {
+            immersivePanoramicBackdrop(
+                size: canvasSize,
+                showsArtworkScene: showsArtworkScene
+            )
+            .offset(x: canvasOffset.width, y: canvasOffset.height)
+
+            panoramicArtworkControls
+                .padding(.horizontal, 32)
+                .opacity(showsArtworkScene ? 1 : 0)
+                .offset(y: showsArtworkScene || reduceMotion ? 0 : 24)
+                .allowsHitTesting(showsArtworkScene)
+                .accessibilityHidden(!showsArtworkScene)
+
+            immersiveDetailContent
+                .padding(.horizontal, 32)
+                .opacity(showsArtworkScene ? 0 : 1)
+                .offset(y: showsArtworkScene && !reduceMotion ? -18 : 0)
+                .allowsHitTesting(!showsArtworkScene)
+                .accessibilityHidden(showsArtworkScene)
+        }
+        .frame(width: size.width, height: size.height)
+        .animation(immersiveSceneAnimation, value: showsArtworkScene)
+    }
+
+    private var panoramicArtworkControls: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(
+                height: NowPlayingPresentationMetrics.immersiveHeaderTopInset
+            )
+            Spacer(minLength: 220)
+            MinimalTrackInfoRow()
+                .padding(.bottom, 18)
+            immersiveControls
+        }
+    }
+
+    private var immersiveDetailContent: some View {
+        VStack(spacing: 0) {
             Color.clear.frame(
                 height: NowPlayingPresentationMetrics.immersiveHeaderTopInset
             )
 
-            CompactTrackHeader(showsExpandedArtwork: showsExpandedArtwork)
-                .padding(.bottom, 14)
+            HStack(spacing: ImmersiveArtworkTransition.compactHeaderSpacing) {
+                immersiveArtworkSurface(isExpanded: false)
+                    .frame(
+                        width: ImmersiveArtworkTransition.compactArtworkDimension,
+                        height: ImmersiveArtworkTransition.compactArtworkDimension
+                    )
+                    .accessibilityHidden(true)
 
-            ZStack {
-                immersiveArtworkContent(artworkDimension: artworkDimension)
-                    .opacity(showsExpandedArtwork ? 1 : 0)
-                    .allowsHitTesting(showsExpandedArtwork)
-                    .accessibilityHidden(!showsExpandedArtwork)
+                MinimalTrackInfoRow()
+            }
+            .padding(.bottom, 14)
 
+            Group {
                 if showQueueOnMobile {
                     CompactQueueContent()
-                        .transition(.opacity)
                 } else {
                     IOSImmersiveLyricsColumn()
-                        .opacity(showLyricsOnMobile ? 1 : 0)
-                        .allowsHitTesting(showLyricsOnMobile)
-                        .accessibilityHidden(!showLyricsOnMobile)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             immersiveControls
         }
-        .frame(width: max(size.width - 64, 0))
-        .padding(.horizontal, 32)
-        .overlayPreferenceValue(ImmersiveArtworkFramePreferenceKey.self) { frames in
-            GeometryReader { proxy in
-                if let compactAnchor = frames[.compact],
-                   let expandedAnchor = frames[.expanded] {
-                    let compactFrame = proxy[compactAnchor]
-                    let expandedFrame = proxy[expandedAnchor]
-                    let targetFrame = showsExpandedArtwork ? expandedFrame : compactFrame
-                    let targetCenterX = showsExpandedArtwork
-                        ? size.width / 2
-                        : compactFrame.midX
+    }
 
-                    immersiveArtworkSurface(isExpanded: showsExpandedArtwork)
-                        .frame(width: targetFrame.width, height: targetFrame.height)
-                        .position(x: targetCenterX, y: targetFrame.midY)
-                        .accessibilityIdentifier("immersiveArtwork")
-                }
+    private func immersivePanoramicBackdrop(
+        size: CGSize,
+        showsArtworkScene: Bool
+    ) -> some View {
+        let artworkHeight = ImmersivePanoramaMetrics.artworkHeight(for: size)
+
+        return ZStack(alignment: .top) {
+            LinearGradient(
+                colors: [colors.primary, colors.secondary, colors.surface],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            if let artworkImage {
+                // The blurred copy is the actual full-screen material. It keeps
+                // real pixels—and therefore real color relationships—alive
+                // behind the controls instead of replacing them with a flat
+                // synthesized gradient.
+                Image(platformImage: artworkImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: size.width, height: size.height)
+                    .clipped()
+                    .scaleEffect(1.2)
+                    .blur(radius: 52)
+                    .saturation(0.92)
+                    .brightness(-0.11)
+                    .opacity(showsArtworkScene ? 0.78 : 0.56)
+
+                // A sharp copy supplies the panoramic artwork. Its lower edge
+                // fades into the blurred copy of itself, so there is no frame
+                // boundary for the eye to discover.
+                Image(platformImage: artworkImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: size.width, height: artworkHeight)
+                    .clipped()
+                    .mask(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .black, location: 0),
+                                .init(color: .black, location: 0.7),
+                                .init(color: .black.opacity(0.7), location: 0.82),
+                                .init(color: .clear, location: 1),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .opacity(showsArtworkScene ? 1 : 0)
+            } else {
+                Rectangle()
+                    .fill(.white.opacity(0.035))
+                    .frame(width: size.width, height: artworkHeight)
+                    .mask(
+                        LinearGradient(
+                            colors: [.black, .black, .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay {
+                        Image(systemName: "music.note")
+                            .font(.system(size: 64, weight: .ultraLight))
+                            .foregroundStyle(.white.opacity(0.24))
+                    }
             }
-            .allowsHitTesting(false)
+
+            // Palette roles control legibility rather than painting a hard
+            // panel: top luminance decides the status-bar scrim, the dominant
+            // tone carries the image downward, and the sampled bottom-edge
+            // tone settles behind the controls.
+            LinearGradient(
+                stops: [
+                    .init(
+                        color: .black.opacity(colors.topScrimOpacity),
+                        location: 0
+                    ),
+                    .init(
+                        color: .black.opacity(colors.topScrimOpacity * 0.35),
+                        location: 0.14
+                    ),
+                    .init(color: .clear, location: 0.3),
+                    .init(color: colors.primary.opacity(0.12), location: 0.46),
+                    .init(color: colors.secondary.opacity(0.58), location: 0.66),
+                    .init(color: colors.surface.opacity(0.9), location: 1),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            if !showsArtworkScene {
+                Color.black.opacity(0.26)
+            }
         }
+        .frame(width: size.width, height: size.height, alignment: .top)
+        .clipped()
+        .animation(immersiveSceneAnimation, value: showsArtworkScene)
+        .accessibilityElement()
+        .accessibilityLabel("专辑封面")
+        .accessibilityIdentifier("immersiveArtwork")
+    }
+
+    private var immersiveSceneAnimation: Animation {
+        reduceMotion
+            ? .easeOut(duration: 0.18)
+            : ImmersiveArtworkTransition.animation
     }
 
     private var immersiveControls: some View {
@@ -431,21 +578,6 @@ struct NowPlayingView: View {
         .padding(.top, 14)
         .padding(.bottom, 10)
         .accessibilityIdentifier("immersiveControls")
-    }
-
-    private func immersiveArtworkContent(artworkDimension: CGFloat) -> some View {
-        VStack(spacing: 18) {
-            Spacer(minLength: 8)
-            Color.clear
-                .frame(width: artworkDimension, height: artworkDimension)
-                .anchorPreference(
-                    key: ImmersiveArtworkFramePreferenceKey.self,
-                    value: .bounds
-                ) { [.expanded: $0] }
-            MiniLyricsView(onOpen: showImmersiveLyrics)
-                .frame(maxWidth: .infinity, maxHeight: 96)
-            Spacer(minLength: 0)
-        }
     }
 
     private func immersiveArtworkSurface(isExpanded: Bool) -> some View {
@@ -478,7 +610,7 @@ struct NowPlayingView: View {
     }
 
     private func toggleImmersiveLyrics() {
-        withAnimation(ImmersiveArtworkTransition.animation) {
+        withAnimation(immersiveSceneAnimation) {
             if showQueueOnMobile {
                 showQueueOnMobile = false
                 showLyricsOnMobile = true
@@ -488,15 +620,8 @@ struct NowPlayingView: View {
         }
     }
 
-    private func showImmersiveLyrics() {
-        withAnimation(ImmersiveArtworkTransition.animation) {
-            showQueueOnMobile = false
-            showLyricsOnMobile = true
-        }
-    }
-
     private func toggleImmersiveQueue() {
-        withAnimation(ImmersiveArtworkTransition.animation) {
+        withAnimation(immersiveSceneAnimation) {
             showQueueOnMobile.toggle()
         }
     }

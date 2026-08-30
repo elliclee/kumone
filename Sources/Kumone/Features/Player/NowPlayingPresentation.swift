@@ -1,5 +1,39 @@
 import SwiftUI
 
+/// Geometry rules for the full-bleed artwork used by the iPhone immersive
+/// player. Kept platform-neutral so the proportional behavior can be tested
+/// by the package test target on macOS.
+enum ImmersivePanoramaMetrics {
+    static let minimumArtworkHeight: CGFloat = 360
+    static let artworkHeightRatio: CGFloat = 0.66
+    static let artworkWidthRatio: CGFloat = 1.36
+
+    static func artworkHeight(for size: CGSize) -> CGFloat {
+        let proportionalHeight = min(
+            size.height * artworkHeightRatio,
+            size.width * artworkWidthRatio
+        )
+        return min(size.height, max(minimumArtworkHeight, proportionalHeight))
+    }
+
+    static func canvasSize(
+        contentSize: CGSize,
+        safeAreaInsets: EdgeInsets
+    ) -> CGSize {
+        CGSize(
+            width: contentSize.width + safeAreaInsets.leading + safeAreaInsets.trailing,
+            height: contentSize.height + safeAreaInsets.top + safeAreaInsets.bottom
+        )
+    }
+
+    static func canvasOffset(safeAreaInsets: EdgeInsets) -> CGSize {
+        CGSize(
+            width: (safeAreaInsets.trailing - safeAreaInsets.leading) / 2,
+            height: (safeAreaInsets.bottom - safeAreaInsets.top) / 2
+        )
+    }
+}
+
 #if os(iOS)
 /// Shared geometry and interaction constants for the iPhone Now Playing
 /// presentation. Keeping these values together makes the relationship between
