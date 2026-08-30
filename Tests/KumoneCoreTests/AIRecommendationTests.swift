@@ -52,13 +52,41 @@ struct AIRecommendationTests {
         #expect(payload.recommendations.first?.title == "一万次悲伤")
     }
 
+    @Test func alternateVersionSharesSeedSignature() throws {
+        let seed = try decodeTrack(id: 1, name: "Bloom", artist: "The Paper Kites")
+        let alternate = try decodeTrack(id: 2, name: "Bloom", artist: "The Paper Kites")
+
+        #expect(seed.id != alternate.id)
+        #expect(!AIRecommendationService.signatures(for: seed).isDisjoint(
+            with: AIRecommendationService.signatures(for: alternate)
+        ))
+    }
+
+    @Test func familiarArtistsAreCapped() throws {
+        let firstKnown = try decodeTrack(id: 1, name: "Song A", artist: "Known Artist")
+        let secondKnown = try decodeTrack(id: 2, name: "Song B", artist: "Known Artist")
+        let discovery = try decodeTrack(id: 3, name: "Song C", artist: "New Artist")
+        let recommendations = [firstKnown, secondKnown, discovery].map {
+            AIRecommendedTrack(track: $0, reason: "Test")
+        }
+
+        let limited = AIRecommendationService.limitKnownArtists(
+            recommendations,
+            knownArtists: [AIRecommendationService.normalized("Known Artist")],
+            limit: 1
+        )
+
+        #expect(limited.map(\.id) == [firstKnown.id, discovery.id])
+    }
+
     private func decodeTrack(
+        id: Int = 42,
         name: String,
         artist: String,
         aliases: [String] = []
     ) throws -> Track {
         let object: [String: Any] = [
-            "id": 42,
+            "id": id,
             "name": name,
             "ar": [["id": 7, "name": artist]],
             "al": ["id": 9, "name": "Test Album", "picUrl": NSNull()],

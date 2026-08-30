@@ -75,7 +75,7 @@ struct SettingsView: View {
 
             Section("AI 推荐") {
                 DeepSeekCredentialEditor()
-                Text("API Key 仅保存在系统钥匙串。生成推荐时，会把最多 40 首红心歌曲的歌名和歌手发送给 DeepSeek。")
+                Text("服务密钥仅保存在系统钥匙串。生成推荐时，会把最多 40 首红心歌曲的歌名和歌手发送给 AI 推荐服务。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

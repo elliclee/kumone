@@ -38,14 +38,22 @@ enum AIRecommendationService {
         }
 
         let payload = try await DeepSeekClient.shared.recommend(from: seedTracks, mood: mood)
-        let matches = await resolve(Array(payload.recommendations.prefix(24)), excluding: likedTrackIDs)
-        guard !matches.isEmpty else { throw AIRecommendationServiceError.noCatalogMatches }
-        return AIRecommendationResult(summary: payload.summary, tracks: Array(matches.prefix(15)))
+        let seedSignatures = Set(seedTracks.flatMap(signatures(for:)))
+        let seedArtists = Set(seedTracks.flatMap(\.artists).map { normalized($0.name) })
+        let matches = await resolve(
+            Array(payload.recommendations.prefix(24)),
+            excluding: likedTrackIDs,
+            excludingSignatures: seedSignatures
+        )
+        let diverseMatches = limitKnownArtists(matches, knownArtists: seedArtists, limit: 2)
+        guard !diverseMatches.isEmpty else { throw AIRecommendationServiceError.noCatalogMatches }
+        return AIRecommendationResult(summary: payload.summary, tracks: Array(diverseMatches.prefix(15)))
     }
 
     static func resolve(
         _ candidates: [DeepSeekSongCandidate],
-        excluding excludedIDs: Set<Int>
+        excluding excludedIDs: Set<Int>,
+        excludingSignatures: Set<String> = []
     ) async -> [AIRecommendedTrack] {
         await withTaskGroup(of: (Int, AIRecommendedTrack?).self) { group in
             for (index, candidate) in candidates.enumerated() {
@@ -54,7 +62,10 @@ enum AIRecommendationService {
                     guard let songs = try? await NeteaseAPI.search(query, type: .songs, limit: 8).songs,
                           let match = bestMatch(
                             for: candidate,
-                            in: songs.filter { !excludedIDs.contains($0.id) }
+                            in: songs.filter {
+                                !excludedIDs.contains($0.id)
+                                    && signatures(for: $0).isDisjoint(with: excludingSignatures)
+                            }
                           ) else {
                         return (index, nil)
                     }
@@ -69,6 +80,33 @@ enum AIRecommendationService {
             return indexed.sorted { $0.0 < $1.0 }
                 .map(\.1)
                 .filter { seen.insert($0.id).inserted }
+        }
+    }
+
+    static func signatures(for track: Track) -> Set<String> {
+        let titles = ([track.name] + track.alias + track.transNames)
+            .map(normalized)
+            .filter { !$0.isEmpty }
+        let artists = track.artists.map { normalized($0.name) }.filter { !$0.isEmpty }
+        return Set(titles.flatMap { title in
+            artists.map { artist in "\(title)|\(artist)" }
+        })
+    }
+
+    static func limitKnownArtists(
+        _ recommendations: [AIRecommendedTrack],
+        knownArtists: Set<String>,
+        limit: Int
+    ) -> [AIRecommendedTrack] {
+        var knownArtistCount = 0
+        return recommendations.filter { recommendation in
+            let usesKnownArtist = recommendation.track.artists
+                .map { normalized($0.name) }
+                .contains { knownArtists.contains($0) }
+            guard usesKnownArtist else { return true }
+            guard knownArtistCount < limit else { return false }
+            knownArtistCount += 1
+            return true
         }
     }
 

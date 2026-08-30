@@ -66,7 +66,7 @@ struct AIRecommendationsView: View {
                 }
                 .font(.headline)
 
-                Text("Kumone 只会将歌名和歌手发送给 DeepSeek，并匹配网易云曲库。")
+                Text("Kumone 只会将歌名和歌手发送给 AI 推荐服务，并匹配网易云曲库。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -133,9 +133,9 @@ struct AIRecommendationsView: View {
     private var setupCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Divider()
-            Text("连接 DeepSeek")
+            Text("配置 AI 推荐")
                 .font(.headline)
-            Text("使用你自己的 API Key。Key 会保存在系统钥匙串中，不会发送给网易云音乐。")
+            Text("服务密钥会保存在系统钥匙串中，不会发送给网易云音乐。")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             DeepSeekCredentialEditor { configured in
@@ -152,7 +152,7 @@ struct AIRecommendationsView: View {
                 .foregroundStyle(.tertiary)
             Text("将随机选取最多 40 首红心歌曲分析")
                 .font(.headline)
-            Text("每次生成都会调用一次 DeepSeek API，并可能产生少量费用。")
+            Text("每次生成都会调用一次 AI 推荐服务，并可能产生少量费用。")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             generateButton(title: "生成我的推荐")
@@ -178,7 +178,7 @@ struct AIRecommendationsView: View {
             ErrorStateView(message: message) {
                 Task { await model.generate(likedTrackIDs: account.likedTrackIDs) }
             }
-            Button("重新配置 API Key") {
+            Button("重新配置服务密钥") {
                 do {
                     try DeepSeekCredentialStore.delete()
                     hasAPIKey = false
@@ -280,7 +280,7 @@ struct DeepSeekCredentialEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             SecureField(
-                configured ? "已配置，输入新 Key 可替换" : "sk-…",
+                configured ? "已配置，输入新密钥可替换" : "输入服务密钥",
                 text: $draft
             )
             .textContentType(.password)
@@ -308,7 +308,7 @@ struct DeepSeekCredentialEditor: View {
             draft = ""
             configured = true
             onChange(true)
-            ToastCenter.shared.show(String(localized: "DeepSeek API Key 已保存"))
+            ToastCenter.shared.show(String(localized: "AI 推荐服务密钥已保存"))
         } catch {
             ToastCenter.shared.show(error.localizedDescription)
         }
@@ -320,7 +320,7 @@ struct DeepSeekCredentialEditor: View {
             draft = ""
             configured = false
             onChange(false)
-            ToastCenter.shared.show(String(localized: "DeepSeek API Key 已移除"))
+            ToastCenter.shared.show(String(localized: "AI 推荐服务密钥已移除"))
         } catch {
             ToastCenter.shared.show(error.localizedDescription)
         }

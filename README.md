@@ -39,7 +39,7 @@ Built with SwiftUI · Talks directly to NetEase's real API · Sparkle auto-updat
 
 - 🔐 **QR code login** — scan with the NetEase Cloud Music app; cookies are persisted locally and auto-refreshed
 - 🏠 **Home** — daily recommendations, Personal FM, Heartbeat Mode, recommended playlists, radar playlists (Personal Radar family, personalized per account), charts, new albums, recommended artists
-- ✨ **AI Picks** — use your own DeepSeek API key to turn liked songs into explainable recommendations matched against the NetEase catalog (key stored in Keychain)
+- ✨ **AI Picks** — discover uncatalogued songs beyond your likes, with explainable recommendations matched against the NetEase catalog (service key stored in Keychain)
 - 🧭 **Explore** — category playlists (curated / official / charts / mood) with infinite scrolling
 - 🎵 **Playback** — AVPlayer engine, Standard to Hi-Res quality (lossless with 黑胶 VIP, automatic fallback), shuffle / repeat one / repeat all, play-next queue, gray track detection
 - 🔓 **Gray track unblocking** — native implementation of UnblockNeteaseMusic's core sources (pyncmd / Kuwo / Kugou); unavailable or trial-only tracks automatically resolve from third-party sources
@@ -122,7 +122,7 @@ Sources/Kumone/
 Core music features use no third-party proxy server: weapi (double AES-CBC + RSA)
 and eapi (AES-ECB + MD5 digest) encryption are implemented natively in Swift;
 requests go directly to `music.163.com` / `interface.music.163.com`. The optional
-AI Picks feature connects directly to DeepSeek with the user's own API key.
+AI Picks feature connects directly to the recommendation service with the user's own service key.
 
 ## Related projects
 
