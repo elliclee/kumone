@@ -33,9 +33,10 @@ final class HomeViewModel: ObservableObject {
     @Published var newAlbums: [AlbumSummary] = []
     @Published var topArtists: [ArtistSummary] = []
     @Published var dailyFirstCover: String?
+    private var loadedForLoggedIn: Bool?
 
     func load(loggedIn: Bool) async {
-        if case .loaded = state { return }
+        if case .loaded = state, loadedForLoggedIn == loggedIn { return }
         state = .loading
 
         async let playlistsTask = fetchRecommendPlaylists(loggedIn: loggedIn)
@@ -44,22 +45,38 @@ final class HomeViewModel: ObservableObject {
         async let artistsTask = try? NeteaseAPI.topArtists()
 
         let playlists = await playlistsTask
-        recommendPlaylists = playlists
-        toplists = (await toplistsTask ?? []).filter {
+        let toplists = (await toplistsTask ?? []).filter {
             [19_723_756, 3_779_629, 2_884_035, 3_778_678, 60198].contains($0.id)
         }
-        newAlbums = await albumsTask ?? []
+        let newAlbums = await albumsTask ?? []
         let artists = await artistsTask ?? []
-        topArtists = Array(artists.shuffled().prefix(6))
+        let topArtists = Array(artists.shuffled().prefix(6))
 
+        // `.task(id:)` cancels the anonymous launch request once account
+        // restoration finishes. A cancelled request is not a network error.
+        guard !Task.isCancelled else { return }
+
+        var nextDailyFirstCover: String?
+        var nextRadarPlaylists: [RadarPlaylist] = []
         if loggedIn {
             if let daily = try? await NeteaseAPI.dailyRecommendSongs() {
-                dailyFirstCover = daily.first?.album.picUrl
+                nextDailyFirstCover = daily.first?.album.picUrl
             }
-            await loadRadarPlaylists()
+            nextRadarPlaylists = await fetchRadarPlaylists()
         }
 
-        state = playlists.isEmpty && newAlbums.isEmpty ? .error(String(localized: "网络连接失败")) : .loaded
+        guard !Task.isCancelled else { return }
+
+        recommendPlaylists = playlists
+        self.toplists = toplists
+        self.newAlbums = newAlbums
+        self.topArtists = topArtists
+        dailyFirstCover = nextDailyFirstCover
+        radarPlaylists = nextRadarPlaylists
+
+        let hasContent = !playlists.isEmpty || !toplists.isEmpty || !newAlbums.isEmpty || !topArtists.isEmpty
+        state = hasContent ? .loaded : .error(String(localized: "网络连接失败"))
+        if hasContent { loadedForLoggedIn = loggedIn }
     }
 
     func reload(loggedIn: Bool) async {
@@ -67,7 +84,7 @@ final class HomeViewModel: ObservableObject {
         await load(loggedIn: loggedIn)
     }
 
-    private func loadRadarPlaylists() async {
+    private func fetchRadarPlaylists() async -> [RadarPlaylist] {
         let briefs = await withTaskGroup(of: (Int, NeteaseAPI.PlaylistBrief.Body?).self) { group in
             for id in Self.radarPlaylistIDs {
                 group.addTask {
@@ -80,7 +97,7 @@ final class HomeViewModel: ObservableObject {
             }
             return byID
         }
-        radarPlaylists = Self.radarPlaylistIDs.compactMap { id in
+        return Self.radarPlaylistIDs.compactMap { id in
             guard let brief = briefs[id] else { return nil }
             // Names arrive as "今天从《…》听起|私人雷达" — split into title/subtitle.
             let parts = (brief.name ?? "").components(separatedBy: "|")
@@ -104,9 +121,18 @@ final class HomeViewModel: ObservableObject {
 }
 
 struct HomeView: View {
+    private struct LoadContext: Hashable {
+        let isBootstrapped: Bool
+        let isLoggedIn: Bool
+    }
+
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerService
     @StateObject private var model = HomeViewModel.shared
+
+    private var loadContext: LoadContext {
+        LoadContext(isBootstrapped: account.isBootstrapped, isLoggedIn: account.isLoggedIn)
+    }
 
     var body: some View {
         ScrollView {
@@ -123,8 +149,10 @@ struct HomeView: View {
             }
         }
         .navigationTitle("推荐")
-        .task(id: account.isLoggedIn) {
-            await model.load(loggedIn: account.isLoggedIn)
+        .task(id: loadContext) {
+            let context = loadContext
+            guard context.isBootstrapped else { return }
+            await model.load(loggedIn: context.isLoggedIn)
         }
     }
 
