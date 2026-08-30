@@ -121,6 +121,10 @@ final class HomeViewModel: ObservableObject {
 }
 
 struct HomeView: View {
+    /// Kept behind a local switch so the shelf can be restored without
+    /// rebuilding its presentation and navigation behavior.
+    private static let showsNewAlbums = false
+
     private struct LoadContext: Hashable {
         let isBootstrapped: Bool
         let isLoggedIn: Bool
@@ -217,7 +221,7 @@ struct HomeView: View {
                 }
             }
 
-            if !model.newAlbums.isEmpty {
+            if Self.showsNewAlbums, !model.newAlbums.isEmpty {
                 Shelf(title: "新碟上架", rowHeight: Theme.Layout.coverShelfHeight) {
                     ForEach(model.newAlbums) { album in
                         albumCard(album)
