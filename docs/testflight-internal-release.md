@@ -9,7 +9,7 @@
 - App Store Connect 名称：`Kumone 内部测试`
 - App 内显示名称：`Kumone`
 - 内部版 Bundle ID：`com.wenmingshu.kumone.internal`
-- 本次版本：`0.3.15 (136)`
+- 版本：`0.3.12`
 - 签名方式：Apple Distribution + App Store provisioning profile
 - 分发范围：TestFlight Internal Only
 
@@ -22,13 +22,6 @@
 - `ITSAppUsesNonExemptEncryption=false`，应用不包含自研或非豁免加密算法。
 - 构建必须为 arm64、Release、`get-task-allow=false`，并完成 Apple Distribution 深度签名。
 - 上传时启用 `testFlightInternalTestingOnly`，确保该构建不能转为外部测试或正式发布。
-
-## 2026-08-30 发布状态
-
-- Apple Distribution 签名归档与 Internal TestFlight IPA 已生成并验包通过。
-- Bundle ID、描述文件、证书、arm64 架构、版本号和 `get-task-allow=false` 均已核对。
-- App Store Connect 尚未创建 `Kumone 内部测试` 应用记录；Apple 校验返回 `Cannot determine the Apple ID from Bundle ID`，因此上传前需先在网页创建记录。
-- 建档字段：平台 `iOS`、名称 `Kumone 内部测试`、主要语言 `简体中文`、Bundle ID `com.wenmingshu.kumone.internal`、SKU `kumone-internal-ios`、用户访问 `完整访问权限`。
 
 ## 验收
 
