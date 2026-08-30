@@ -91,6 +91,7 @@ struct TrackRow: View {
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumInteractiveSize()
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: 220, alignment: .leading)

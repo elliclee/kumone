@@ -81,6 +81,7 @@ struct DailySongsView: View {
                         .padding(.vertical, 9)
                         .background(Theme.accentGradient, in: Capsule())
                         .shadow(color: .black.opacity(0.3), radius: 6, y: 2)
+                        .minimumInteractiveSize()
                 }
                 .buttonStyle(.pressable)
             }

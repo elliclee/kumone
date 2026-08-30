@@ -20,6 +20,7 @@ struct RoutePickerButton: View {
             .frame(width: diameter, height: diameter)
             .background(background, in: Circle())
             .help("AirPlay")
+            .accessibilityLabel("AirPlay")
     }
 }
 

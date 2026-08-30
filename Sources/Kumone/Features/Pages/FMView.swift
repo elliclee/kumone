@@ -156,11 +156,10 @@ struct FMView: View {
         Button {
             player.startFM()
         } label: {
-            Label("开始漫游", systemImage: "wave.3.right")
-                .font(.headline)
+            Label("开始漫游", systemImage: "play.fill")
         }
-        .controlSize(.large)
-        .appProminentButtonStyle()
+        .buttonStyle(.primaryAction)
+        .accessibilityHint("根据你的听歌口味开始连续播放")
     }
     #endif
 
@@ -380,8 +379,7 @@ struct FMView: View {
     @ViewBuilder
     private var loginButton: some View {
         Button("登录") { openLogin() }
-            .controlSize(.large)
-            .appProminentButtonStyle()
+            .buttonStyle(.primaryAction)
     }
     #endif
 }

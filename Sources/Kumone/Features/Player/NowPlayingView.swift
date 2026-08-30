@@ -49,8 +49,10 @@ struct NowPlayingView: View {
                             .foregroundStyle(.white.opacity(0.85))
                             .frame(width: 36, height: 36)
                             .background(.white.opacity(0.12), in: Circle())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel("收起播放页")
                     .padding(.top, 20)
                     .padding(.leading, 20)
                 }
@@ -67,8 +69,10 @@ struct NowPlayingView: View {
                             .foregroundStyle(showLyricsOnMobile ? Theme.accent : .white.opacity(0.85))
                             .frame(width: 36, height: 36)
                             .background(.white.opacity(0.12), in: Circle())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel(showLyricsOnMobile ? "显示封面" : "显示歌词")
                     .padding(.top, 20)
                     .padding(.trailing, 20)
                 }
@@ -820,7 +824,9 @@ struct NowPlayingView: View {
                 let liked = account.isLiked(track.id)
                 circleButton(
                     icon: liked ? "heart.fill" : "heart",
-                    size: 15, tint: liked ? Theme.accent : nil
+                    size: 15,
+                    label: liked ? "取消收藏" : "收藏",
+                    tint: liked ? Theme.accent : nil
                 ) {
                     Task { await account.toggleLike(trackID: track.id) }
                 }
@@ -828,19 +834,20 @@ struct NowPlayingView: View {
             }
 
             if player.isFMMode {
-                circleButton(icon: "trash", size: 14) {
+                circleButton(icon: "trash", size: 14, label: "不喜欢") {
                     player.fmTrash()
                 }
                 .frame(maxWidth: .infinity)
             } else {
                 circleButton(
                     icon: "shuffle", size: 14,
+                    label: player.shuffleEnabled ? "关闭随机播放" : "随机播放",
                     tint: player.shuffleEnabled ? Theme.accent : nil
                 ) {
                     player.toggleShuffle()
                 }
                 .frame(maxWidth: .infinity)
-                circleButton(icon: "backward.fill", size: 16) {
+                circleButton(icon: "backward.fill", size: 16, label: "上一首") {
                     player.previous()
                 }
                 .frame(maxWidth: .infinity)
@@ -849,12 +856,12 @@ struct NowPlayingView: View {
             playPauseButton
                 .frame(maxWidth: .infinity)
 
-            circleButton(icon: "forward.fill", size: 16) {
+            circleButton(icon: "forward.fill", size: 16, label: "下一首") {
                 player.next()
             }
             .frame(maxWidth: .infinity)
 
-            RoutePickerButton(diameter: 40, glyphSize: 15)
+            RoutePickerButton(diameter: Theme.Layout.minimumTouchTarget, glyphSize: 15)
                 .frame(maxWidth: .infinity)
 
             if player.isFMMode {
@@ -867,6 +874,7 @@ struct NowPlayingView: View {
                 circleButton(
                     icon: player.repeatMode == .one ? "repeat.1" : "repeat",
                     size: 14,
+                    label: player.repeatMode == .off ? "开启循环播放" : "切换循环模式",
                     tint: player.repeatMode != .off ? Theme.accent : nil
                 ) {
                     player.cycleRepeatMode()
@@ -894,16 +902,23 @@ struct NowPlayingView: View {
         .buttonStyle(.pressable)
     }
 
-    private func circleButton(icon: String, size: CGFloat,
-                              tint: Color? = nil, action: @escaping () -> Void) -> some View {
+    private func circleButton(
+        icon: String,
+        size: CGFloat,
+        label: LocalizedStringKey,
+        tint: Color? = nil,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: size, weight: .medium))
                 .foregroundStyle(tint ?? .white.opacity(0.8))
                 .frame(width: 40, height: 40)
                 .background(.white.opacity(0.1), in: Circle())
+                .minimumInteractiveSize()
         }
         .buttonStyle(.pressable)
+        .accessibilityLabel(label)
     }
 
     // MARK: - Lyrics column
@@ -1414,7 +1429,7 @@ private struct CompactVolumeControl: View {
                 )
                 .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isDragging)
             }
-            .frame(height: 24)
+            .frame(height: Theme.Layout.minimumTouchTarget)
             .accessibilityElement()
             .accessibilityLabel("音量")
             .accessibilityValue("\(Int((player.volume * 100).rounded()))%")
@@ -1575,7 +1590,7 @@ private struct CompactQueueContent: View {
             Image(systemName: icon)
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(isActive ? Color.black.opacity(0.76) : .white.opacity(0.76))
-                .frame(maxWidth: .infinity, minHeight: 42)
+                .frame(maxWidth: .infinity, minHeight: Theme.Layout.minimumTouchTarget)
                 .background(
                     isActive ? AnyShapeStyle(.white.opacity(0.66)) : AnyShapeStyle(.white.opacity(0.1)),
                     in: Capsule()

@@ -60,8 +60,10 @@ final class AccountStore: ObservableObject {
         guard let uid = profile?.userId else { return }
         async let playlists = try? NeteaseAPI.userPlaylists(uid: uid)
         async let liked = try? NeteaseAPI.likedTrackIDs(uid: uid)
+        async let artists = try? NeteaseAPI.likedArtists()
         userPlaylists = await playlists ?? userPlaylists
         if let ids = await liked { likedTrackIDs = Set(ids) }
+        likedArtists = await artists ?? likedArtists
     }
 
     func refreshSublists() async {
@@ -69,6 +71,10 @@ final class AccountStore: ObservableObject {
         async let artists = try? NeteaseAPI.likedArtists()
         likedAlbums = await albums ?? likedAlbums
         likedArtists = await artists ?? likedArtists
+    }
+
+    func refreshFollowedArtists() async {
+        likedArtists = (try? await NeteaseAPI.likedArtists()) ?? likedArtists
     }
 
     func isLiked(_ trackID: Int) -> Bool {

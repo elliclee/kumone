@@ -193,6 +193,7 @@ struct ArtistDetailView: View {
                     .padding(.vertical, 9)
                     .background(Theme.accentGradient, in: Capsule())
                     .shadow(color: Theme.accent.opacity(0.3), radius: 6, y: 2)
+                    .minimumInteractiveSize()
                 }
                 .buttonStyle(.pressable)
 
@@ -205,8 +206,10 @@ struct ArtistDetailView: View {
                             .foregroundStyle(isFollowed ? Theme.accent : .primary)
                             .frame(width: 38, height: 38)
                             .background(.primary.opacity(0.06), in: Circle())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel(isFollowed ? "取消关注" : "关注歌手")
                 }
             }
         }
@@ -251,6 +254,7 @@ struct ArtistDetailView: View {
                             .padding(.vertical, 8)
                             .background(Theme.accentGradient, in: Capsule())
                             .shadow(color: Theme.accent.opacity(0.3), radius: 6, y: 2)
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
 
@@ -264,6 +268,7 @@ struct ArtistDetailView: View {
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
                                 .background(.primary.opacity(0.06), in: Capsule())
+                                .minimumInteractiveSize()
                         }
                         .buttonStyle(.pressable)
                     }
@@ -290,6 +295,7 @@ struct ArtistDetailView: View {
                 try await NeteaseAPI.subscribeArtist(id: artistID, subscribe: !isFollowed)
                 isFollowed.toggle()
                 ToastCenter.shared.show(isFollowed ? String(localized: "已关注歌手") : String(localized: "已取消关注"))
+                await account.refreshFollowedArtists()
             } catch {
                 ToastCenter.shared.show(error.localizedDescription)
             }

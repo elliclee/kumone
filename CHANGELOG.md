@@ -6,6 +6,20 @@
 section the English bullets come first, followed by their Simplified Chinese
 counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单行。
 
+## 0.3.15 - 2026-08-31
+
+### Added / 新增
+
+- **iOS**: the Home page now surfaces recent releases from followed artists instead of a generic recommended-artists shelf; results refresh after following or unfollowing an artist, are deduplicated and sorted by release date, and stay hidden when no followed-artist release is available.
+- **iOS**：首页以「关注歌手的新作」替换通用的推荐歌手货架；关注或取消关注歌手后自动刷新，结果会去重并按发行时间排序，没有可用新作时不显示空货架。
+- **iOS**: immersive Now Playing gains an adaptive panoramic layout — artwork fills the upper screen and a sampled colour gradient blends it naturally into lyrics and controls while preserving queue, AirPlay, favourite, progress and volume interactions.
+- **iOS**：沉浸播放页升级为自适应全景布局——封面铺满屏幕上半部，并通过封面采样生成的颜色渐变自然融入歌词与控制区，同时保留队列、AirPlay、收藏、进度和音量操作。
+
+### Improved / 改进
+
+- **iOS**: audited and unified app-owned buttons across Home, Roam, library, detail, login, updater and player screens; primary actions now share a 48pt brand capsule, compact actions provide at least a 44pt hit target, and disabled plus Reduce Motion states behave consistently while system toolbars and menus remain native.
+- **iOS**：完成首页、漫游、收藏、详情、登录、更新与播放页的按钮审计和统一；主操作统一为 48pt 品牌胶囊按钮，小型操作至少提供 44pt 点击区域，禁用态与「减弱动态效果」行为一致，系统工具栏和菜单则保持原生样式。
+
 ## 0.3.14 - 2026-08-29
 
 ### Added / 新增

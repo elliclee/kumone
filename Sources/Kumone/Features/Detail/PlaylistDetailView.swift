@@ -192,6 +192,7 @@ struct PlaylistDetailView: View {
                             .font(.system(size: 9))
                             .foregroundStyle(.tertiary)
                     }
+                    .minimumInteractiveSize()
                 }
                 .buttonStyle(.plain)
                 .sheet(isPresented: $showFullDescription) {
@@ -230,6 +231,7 @@ struct PlaylistDetailView: View {
                     .padding(.vertical, 9)
                     .background(Theme.accentGradient, in: Capsule())
                     .shadow(color: Theme.accent.opacity(0.3), radius: 6, y: 2)
+                    .minimumInteractiveSize()
                 }
                 .buttonStyle(.pressable)
 
@@ -242,8 +244,10 @@ struct PlaylistDetailView: View {
                             .foregroundStyle(Theme.accent)
                             .frame(width: 38, height: 38)
                             .background(.primary.opacity(0.06), in: Circle())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel("心动模式")
                 } else if !isOwnPlaylist, account.isLoggedIn {
                     Button {
                         toggleSubscribe(detail)
@@ -253,8 +257,10 @@ struct PlaylistDetailView: View {
                             .foregroundStyle(detail.subscribed ? Theme.accent : .primary)
                             .frame(width: 38, height: 38)
                             .background(.primary.opacity(0.06), in: Circle())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel(detail.subscribed ? "取消收藏" : "收藏歌单")
                 }
             }
         }
@@ -302,6 +308,7 @@ struct PlaylistDetailView: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.plain)
                     .popover(isPresented: $showFullDescription, arrowEdge: .bottom) {
@@ -337,6 +344,7 @@ struct PlaylistDetailView: View {
                     .padding(.vertical, 8)
                     .background(Theme.accentGradient, in: Capsule())
                     .shadow(color: Theme.accent.opacity(0.3), radius: 6, y: 2)
+                    .minimumInteractiveSize()
             }
             .buttonStyle(.pressable)
 
@@ -349,6 +357,7 @@ struct PlaylistDetailView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(.primary.opacity(0.06), in: Capsule())
+                        .minimumInteractiveSize()
                 }
                 .buttonStyle(.pressable)
             } else if !isOwnPlaylist, account.isLoggedIn {
@@ -361,6 +370,7 @@ struct PlaylistDetailView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(.primary.opacity(0.06), in: Capsule())
+                        .minimumInteractiveSize()
                 }
                 .buttonStyle(.pressable)
             }

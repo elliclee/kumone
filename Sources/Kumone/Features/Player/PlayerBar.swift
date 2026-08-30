@@ -65,6 +65,7 @@ struct PlayerBar: View {
                         .strokeBorder(.primary.opacity(0.1), lineWidth: 0.5)
                 )
                 .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
+                .minimumInteractiveSize()
         }
         .buttonStyle(.pressable)
         .help("打开播放页")
@@ -143,6 +144,7 @@ struct PlayerBar: View {
                         .contentTransition(.opacity)
                 }
             }
+            .minimumInteractiveSize()
         }
         .buttonStyle(.pressable)
         .padding(.horizontal, 2)
@@ -227,10 +229,10 @@ struct PlayerIconButton: View {
                         .fill(backgroundColor)
                 )
                 .contentShape(Rectangle())
+                .minimumInteractiveSize()
         }
         .buttonStyle(.pressable)
         .disabled(disabled)
-        .opacity(disabled ? 0.35 : 1)
         .onHover { isHovering = $0 }
         .animation(AppAnimation.quick, value: isHovering)
     }
@@ -260,6 +262,7 @@ struct LikeButton: View {
             Task { await account.toggleLike(trackID: trackID) }
         }
         .help(liked ? String(localized: "取消喜欢") : String(localized: "喜欢"))
+        .accessibilityLabel(liked ? "取消喜欢" : "喜欢")
     }
 }
 

@@ -130,6 +130,7 @@ struct AlbumDetailView: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(Theme.accent)
                                 .lineLimit(1)
+                                .minimumInteractiveSize()
                         }
                         .buttonStyle(.plain)
                     }
@@ -153,6 +154,7 @@ struct AlbumDetailView: View {
                             .font(.system(size: 9))
                             .foregroundStyle(.tertiary)
                     }
+                    .minimumInteractiveSize()
                 }
                 .buttonStyle(.plain)
                 .sheet(isPresented: $showFullDescription) {
@@ -191,6 +193,7 @@ struct AlbumDetailView: View {
                     .padding(.vertical, 9)
                     .background(Theme.accentGradient, in: Capsule())
                     .shadow(color: Theme.accent.opacity(0.3), radius: 6, y: 2)
+                    .minimumInteractiveSize()
                 }
                 .buttonStyle(.pressable)
 
@@ -203,8 +206,10 @@ struct AlbumDetailView: View {
                             .foregroundStyle(isSubscribed ? Theme.accent : .primary)
                             .frame(width: 38, height: 38)
                             .background(.primary.opacity(0.06), in: Circle())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
+                    .accessibilityLabel(isSubscribed ? "取消收藏" : "收藏专辑")
                 }
             }
         }
@@ -233,6 +238,7 @@ struct AlbumDetailView: View {
                         Text(artist.name)
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Theme.accent)
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.plain)
                 }
@@ -250,6 +256,7 @@ struct AlbumDetailView: View {
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.plain)
                     .popover(isPresented: $showFullDescription, arrowEdge: .bottom) {
@@ -277,6 +284,7 @@ struct AlbumDetailView: View {
                             .padding(.vertical, 8)
                             .background(Theme.accentGradient, in: Capsule())
                             .shadow(color: Theme.accent.opacity(0.3), radius: 6, y: 2)
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
 
@@ -290,6 +298,7 @@ struct AlbumDetailView: View {
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
                                 .background(.primary.opacity(0.06), in: Capsule())
+                                .minimumInteractiveSize()
                         }
                         .buttonStyle(.pressable)
                     }

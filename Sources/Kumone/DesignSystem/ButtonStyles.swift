@@ -74,12 +74,52 @@ struct PressableButtonStyle: ButtonStyle {
         return 0.9
         #endif
     }()
+    @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? pressScale : 1.0)
-            .opacity(configuration.isPressed ? 0.78 : 1.0)
+            .scaleEffect(configuration.isPressed && isEnabled && !reduceMotion ? pressScale : 1.0)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.78 : 1.0) : 0.45)
+            .animation(reduceMotion ? nil : AppAnimation.quick, value: configuration.isPressed)
+            .animation(AppAnimation.quick, value: isEnabled)
+    }
+}
+
+/// Branded treatment for a page's single primary action.
+///
+/// Keeps the action visually consistent with playback CTAs while preserving
+/// the native 44pt minimum target and Reduce Motion behavior.
+struct PrimaryActionButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 24)
+            .frame(minHeight: 48)
+            .background {
+                Capsule()
+                    .fill(
+                        isEnabled
+                            ? AnyShapeStyle(Theme.accentGradient)
+                            : AnyShapeStyle(Color.secondary.opacity(0.25))
+                    )
+            }
+            .overlay {
+                Capsule()
+                    .stroke(.white.opacity(isEnabled ? 0.14 : 0.06), lineWidth: 0.5)
+            }
+            .shadow(
+                color: isEnabled ? Theme.accent.opacity(0.24) : .clear,
+                radius: 8,
+                y: 3
+            )
+            .contentShape(Capsule())
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.82 : 1)
             .animation(reduceMotion ? nil : AppAnimation.quick, value: configuration.isPressed)
     }
 }
@@ -146,28 +186,27 @@ extension ButtonStyle where Self == PressableButtonStyle {
     static var pressable: PressableButtonStyle { PressableButtonStyle() }
 }
 
+extension ButtonStyle where Self == PrimaryActionButtonStyle {
+    static var primaryAction: PrimaryActionButtonStyle { PrimaryActionButtonStyle() }
+}
+
 extension ButtonStyle where Self == ChipButtonStyle {
     static func chip(isSelected: Bool) -> ChipButtonStyle { ChipButtonStyle(isSelected: isSelected) }
 }
 
 extension View {
-    /// Uses the platform's own prominent action treatment. iOS 26 supplies
-    /// Liquid Glass; older systems retain the native filled button.
+    /// Preserves compact visual chrome while guaranteeing Apple's minimum
+    /// touch target on iOS. Desktop keeps its denser pointer-oriented layout.
     @ViewBuilder
-    func appProminentButtonStyle() -> some View {
+    func minimumInteractiveSize() -> some View {
         #if os(iOS)
-        if #available(iOS 26.0, *) {
-            buttonStyle(.glassProminent)
-                .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.large))
-                .tint(Theme.accent)
-        } else {
-            buttonStyle(.borderedProminent)
-                .buttonBorderShape(.roundedRectangle(radius: Theme.Radius.large))
-                .tint(Theme.accent)
-        }
+        frame(
+            minWidth: Theme.Layout.minimumTouchTarget,
+            minHeight: Theme.Layout.minimumTouchTarget
+        )
+        .contentShape(Rectangle())
         #else
-        buttonStyle(.borderedProminent)
-            .tint(Theme.accent)
+        self
         #endif
     }
 }

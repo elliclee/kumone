@@ -230,8 +230,7 @@ struct ErrorStateView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Button("重试", action: retry)
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+                .buttonStyle(.primaryAction)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(40)

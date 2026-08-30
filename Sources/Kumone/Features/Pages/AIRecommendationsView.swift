@@ -88,6 +88,7 @@ struct AIRecommendationsView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.tertiary)
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("清除听歌描述")
@@ -108,8 +109,7 @@ struct AIRecommendationsView: View {
             EmptyStateView(icon: "person.crop.circle.badge.exclamationmark", title: "登录后才能分析你的红心歌曲")
                 .frame(minHeight: 280)
             Button("登录网易云音乐") { openLogin() }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+                .buttonStyle(.primaryAction)
                 .frame(maxWidth: .infinity)
         } else if !hasAPIKey {
             setupCard
@@ -189,6 +189,7 @@ struct AIRecommendationsView: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
+            .minimumInteractiveSize()
         }
         .frame(minHeight: 300)
     }
@@ -220,6 +221,7 @@ struct AIRecommendationsView: View {
                 } label: {
                     Label("播放全部", systemImage: "play.fill")
                         .font(.subheadline.weight(.semibold))
+                        .minimumInteractiveSize()
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Theme.accent)
@@ -266,8 +268,7 @@ struct AIRecommendationsView: View {
         } label: {
             Label(title, systemImage: "sparkles")
         }
-        .buttonStyle(.borderedProminent)
-        .tint(Theme.accent)
+        .buttonStyle(.primaryAction)
     }
 }
 

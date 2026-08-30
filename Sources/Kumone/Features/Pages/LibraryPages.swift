@@ -33,6 +33,7 @@ struct RecentsView: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(Theme.accentGradient, in: Capsule())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
                     .disabled(records.isEmpty)
@@ -114,6 +115,7 @@ struct CloudView: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(Theme.accentGradient, in: Capsule())
+                            .minimumInteractiveSize()
                     }
                     .buttonStyle(.pressable)
                     .disabled(items.isEmpty)

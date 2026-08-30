@@ -241,11 +241,9 @@ struct IOSUpdaterSheet: View {
     private func primaryButton(_ title: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.headline)
                 .frame(maxWidth: .infinity)
         }
-        .controlSize(.large)
-        .appProminentButtonStyle()
+        .buttonStyle(.primaryAction)
     }
 
     private var laterButton: some View {
@@ -254,13 +252,12 @@ struct IOSUpdaterSheet: View {
             dismiss()
         }
         .buttonStyle(.plain).font(.system(size: 13)).foregroundStyle(.secondary)
+        .minimumInteractiveSize()
     }
 
     private var doneButton: some View {
         Button("完成") { dismiss() }
-            .font(.headline)
-            .controlSize(.large)
-            .appProminentButtonStyle()
+            .buttonStyle(.primaryAction)
     }
 }
 

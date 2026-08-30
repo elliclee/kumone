@@ -1,5 +1,34 @@
 import SwiftUI
 
+enum FollowedArtistReleaseSelector {
+    static let artistLimit = 12
+    static let albumsPerArtist = 3
+    static let releaseLimit = 12
+
+    static func recentCutoff(referenceDate: Date = .now, calendar: Calendar = .current) -> Int {
+        let cutoff = calendar.date(byAdding: .year, value: -2, to: referenceDate) ?? referenceDate
+        return Int(cutoff.timeIntervalSince1970 * 1_000)
+    }
+
+    static func select(
+        from batches: [[AlbumSummary]],
+        newerThan cutoff: Int,
+        limit: Int = releaseLimit
+    ) -> [AlbumSummary] {
+        var seen = Set<Int>()
+        return batches
+            .flatMap { $0 }
+            .filter { $0.publishTime >= cutoff }
+            .sorted {
+                if $0.publishTime == $1.publishTime { return $0.id > $1.id }
+                return $0.publishTime > $1.publishTime
+            }
+            .filter { seen.insert($0.id).inserted }
+            .prefix(limit)
+            .map { $0 }
+    }
+}
+
 @MainActor
 final class HomeViewModel: ObservableObject {
     /// Shared so the loaded page survives sidebar switches (no skeleton flash).
@@ -31,26 +60,30 @@ final class HomeViewModel: ObservableObject {
     @Published var radarPlaylists: [RadarPlaylist] = []
     @Published var toplists: [ToplistItem] = []
     @Published var newAlbums: [AlbumSummary] = []
-    @Published var topArtists: [ArtistSummary] = []
+    @Published var followedArtistReleases: [AlbumSummary] = []
     @Published var dailyFirstCover: String?
-    private var loadedForLoggedIn: Bool?
+    private var loadedForContext: LoadContext?
 
-    func load(loggedIn: Bool) async {
-        if case .loaded = state, loadedForLoggedIn == loggedIn { return }
+    private struct LoadContext: Equatable {
+        let loggedIn: Bool
+        let followedArtistIDs: [Int]
+    }
+
+    func load(loggedIn: Bool, followedArtistIDs: [Int]) async {
+        let context = LoadContext(loggedIn: loggedIn, followedArtistIDs: followedArtistIDs)
+        if case .loaded = state, loadedForContext == context { return }
         state = .loading
+        followedArtistReleases = []
 
         async let playlistsTask = fetchRecommendPlaylists(loggedIn: loggedIn)
         async let toplistsTask = try? NeteaseAPI.toplists()
         async let albumsTask = try? NeteaseAPI.newAlbums(limit: 20)
-        async let artistsTask = try? NeteaseAPI.topArtists()
 
         let playlists = await playlistsTask
         let toplists = (await toplistsTask ?? []).filter {
             [19_723_756, 3_779_629, 2_884_035, 3_778_678, 60198].contains($0.id)
         }
         let newAlbums = await albumsTask ?? []
-        let artists = await artistsTask ?? []
-        let topArtists = Array(artists.shuffled().prefix(6))
 
         // `.task(id:)` cancels the anonymous launch request once account
         // restoration finishes. A cancelled request is not a network error.
@@ -70,18 +103,56 @@ final class HomeViewModel: ObservableObject {
         recommendPlaylists = playlists
         self.toplists = toplists
         self.newAlbums = newAlbums
-        self.topArtists = topArtists
         dailyFirstCover = nextDailyFirstCover
         radarPlaylists = nextRadarPlaylists
 
-        let hasContent = !playlists.isEmpty || !toplists.isEmpty || !newAlbums.isEmpty || !topArtists.isEmpty
+        let hasContent = !playlists.isEmpty || !toplists.isEmpty || !newAlbums.isEmpty
         state = hasContent ? .loaded : .error(String(localized: "网络连接失败"))
-        if hasContent { loadedForLoggedIn = loggedIn }
+        if hasContent { loadedForContext = context }
+
+        guard hasContent, loggedIn, !followedArtistIDs.isEmpty else { return }
+        let releases = await fetchFollowedArtistReleases(artistIDs: followedArtistIDs)
+        guard !Task.isCancelled, loadedForContext == context else { return }
+        followedArtistReleases = releases
     }
 
-    func reload(loggedIn: Bool) async {
+    func reload(loggedIn: Bool, followedArtistIDs: [Int]) async {
         state = .idle
-        await load(loggedIn: loggedIn)
+        await load(loggedIn: loggedIn, followedArtistIDs: followedArtistIDs)
+    }
+
+    private func fetchFollowedArtistReleases(artistIDs: [Int]) async -> [AlbumSummary] {
+        let ids = Array(artistIDs.prefix(FollowedArtistReleaseSelector.artistLimit))
+        var batches: [[AlbumSummary]] = []
+
+        // Four requests at a time keeps the secondary shelf from flooding the
+        // service. The primary home content is already visible while this runs.
+        for start in stride(from: 0, to: ids.count, by: 4) {
+            guard !Task.isCancelled else { return [] }
+            let end = min(start + 4, ids.count)
+            let chunk = Array(ids[start..<end])
+            let next = await withTaskGroup(of: [AlbumSummary].self, returning: [[AlbumSummary]].self) { group in
+                for id in chunk {
+                    group.addTask {
+                        let response = try? await NeteaseAPI.artistAlbums(
+                            id: id,
+                            limit: FollowedArtistReleaseSelector.albumsPerArtist
+                        )
+                        return response?.hotAlbums ?? []
+                    }
+                }
+
+                var albums: [[AlbumSummary]] = []
+                for await result in group { albums.append(result) }
+                return albums
+            }
+            batches += next
+        }
+
+        return FollowedArtistReleaseSelector.select(
+            from: batches,
+            newerThan: FollowedArtistReleaseSelector.recentCutoff()
+        )
     }
 
     private func fetchRadarPlaylists() async -> [RadarPlaylist] {
@@ -128,6 +199,7 @@ struct HomeView: View {
     private struct LoadContext: Hashable {
         let isBootstrapped: Bool
         let isLoggedIn: Bool
+        let followedArtistIDs: [Int]
     }
 
     @EnvironmentObject private var account: AccountStore
@@ -135,7 +207,11 @@ struct HomeView: View {
     @StateObject private var model = HomeViewModel.shared
 
     private var loadContext: LoadContext {
-        LoadContext(isBootstrapped: account.isBootstrapped, isLoggedIn: account.isLoggedIn)
+        LoadContext(
+            isBootstrapped: account.isBootstrapped,
+            isLoggedIn: account.isLoggedIn,
+            followedArtistIDs: account.isLoggedIn ? account.likedArtists.map(\.id) : []
+        )
     }
 
     var body: some View {
@@ -145,7 +221,12 @@ struct HomeView: View {
                 loadingBody
             case .error(let message):
                 ErrorStateView(message: message) {
-                    Task { await model.reload(loggedIn: account.isLoggedIn) }
+                    Task {
+                        await model.reload(
+                            loggedIn: account.isLoggedIn,
+                            followedArtistIDs: account.likedArtists.map(\.id)
+                        )
+                    }
                 }
                 .frame(minHeight: 400)
             case .loaded:
@@ -156,7 +237,10 @@ struct HomeView: View {
         .task(id: loadContext) {
             let context = loadContext
             guard context.isBootstrapped else { return }
-            await model.load(loggedIn: context.isLoggedIn)
+            await model.load(
+                loggedIn: context.isLoggedIn,
+                followedArtistIDs: context.followedArtistIDs
+            )
         }
     }
 
@@ -229,10 +313,10 @@ struct HomeView: View {
                 }
             }
 
-            if !model.topArtists.isEmpty {
-                Shelf(title: "推荐歌手", rowHeight: Theme.Layout.artistShelfHeight) {
-                    ForEach(model.topArtists) { artist in
-                        artistCard(artist)
+            if !model.followedArtistReleases.isEmpty {
+                Shelf(title: "关注歌手的新作", rowHeight: Theme.Layout.coverShelfHeight) {
+                    ForEach(model.followedArtistReleases) { album in
+                        albumCard(album)
                     }
                 }
             }
@@ -368,25 +452,6 @@ struct HomeView: View {
                     }
                 }
             }
-        }
-        .buttonStyle(.interactiveCard)
-    }
-
-    private func artistCard(_ artist: ArtistSummary) -> some View {
-        NavigationLink(value: Destination.artist(artist.id)) {
-            VStack(spacing: 10) {
-                CachedAsyncImage(url: artist.picUrl?.resizedImageURL(256))
-                    .frame(width: 128, height: 128)
-                    .clipShape(Circle())
-                    #if os(macOS)
-                    .overlay(Circle().strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
-                    #endif
-                Text(artist.name)
-                    .font(Theme.Typography.cardTitle)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-            }
-            .frame(width: 140)
         }
         .buttonStyle(.interactiveCard)
     }

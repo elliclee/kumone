@@ -405,6 +405,7 @@ struct IOSMiniPlayerBar: View {
         HStack(spacing: 4) {
             Button(action: showNowPlaying) {
                 trackSummary
+                    .minimumInteractiveSize()
             }
             .buttonStyle(.plain)
             .accessibilityLabel(nowPlayingAccessibilityLabel)
@@ -420,7 +421,6 @@ struct IOSMiniPlayerBar: View {
                 }
                 .buttonStyle(.pressable)
                 .disabled(player.isFMMode)
-                .opacity(player.isFMMode ? 0.35 : 1)
                 .accessibilityLabel("上一首")
             }
 
@@ -742,8 +742,7 @@ struct IOSLibraryView: View {
                 Button("登录") {
                     showLogin = true
                 }
-                .controlSize(.large)
-                .appProminentButtonStyle()
+                .buttonStyle(.primaryAction)
             }
         } else {
             VStack(spacing: 12) {
@@ -759,8 +758,7 @@ struct IOSLibraryView: View {
                 Button("登录") {
                     showLogin = true
                 }
-                .controlSize(.large)
-                .appProminentButtonStyle()
+                .buttonStyle(.primaryAction)
             }
         }
     }

@@ -67,6 +67,7 @@ struct LoginSheet: View {
             .buttonStyle(.plain)
             .font(.system(size: 12.5))
             .foregroundStyle(.secondary)
+            .minimumInteractiveSize()
             .padding(.bottom, 20)
         }
         .frame(width: 320)
@@ -126,6 +127,7 @@ struct LoginSheet: View {
                             .buttonStyle(.borderedProminent)
                             .tint(Theme.accent)
                             .controlSize(.small)
+                            .minimumInteractiveSize()
                         case .scanned(let nickname):
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 34))
@@ -295,6 +297,7 @@ struct LoginSheet: View {
                         }
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(canSendCode ? Theme.accent : .secondary)
+                        .frame(minHeight: Theme.Layout.minimumTouchTarget)
                     }
                     .buttonStyle(.plain).disabled(!canSendCode)
                 }
@@ -318,14 +321,9 @@ struct LoginSheet: View {
                         Text("登录")
                     }
                 }
-                .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
-                .frame(maxWidth: .infinity).padding(.vertical, 13)
-                .background(
-                    Capsule().fill(canLogin ? AnyShapeStyle(Theme.accentGradient)
-                                            : AnyShapeStyle(Color.secondary.opacity(0.25)))
-                )
+                .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.pressable).disabled(!canLogin)
+            .buttonStyle(.primaryAction).disabled(!canLogin)
             .padding(.horizontal, 28).padding(.top, 2)
         }
         .frame(minHeight: 300)
@@ -393,7 +391,8 @@ struct LoginSheet: View {
 private extension View {
     func fieldChrome() -> some View {
         self
-            .padding(.horizontal, 14).padding(.vertical, 12)
+            .padding(.horizontal, 14)
+            .frame(minHeight: Theme.Layout.minimumTouchTarget)
             .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.primary.opacity(0.06), lineWidth: 1))
     }
