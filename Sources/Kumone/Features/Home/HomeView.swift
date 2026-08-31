@@ -510,8 +510,9 @@ struct FeatureCard: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            if let artworkName {
-                Image(artworkName, bundle: .module)
+            if let artworkName,
+               let artwork = FeatureArtwork.image(named: artworkName) {
+                Image(platformImage: artwork)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 230, height: 132)
@@ -572,6 +573,26 @@ struct FeatureCard: View {
             startPoint: .top,
             endPoint: .bottom
         )
+    }
+
+    @MainActor
+    enum FeatureArtwork {
+        private static var cache: [String: PlatformImage] = [:]
+
+        static func image(named name: String) -> PlatformImage? {
+            if let cached = cache[name] {
+                return cached
+            }
+
+            guard let url = Bundle.module.url(forResource: name, withExtension: "jpg"),
+                  let data = try? Data(contentsOf: url),
+                  let image = PlatformImage(data: data) else {
+                return nil
+            }
+
+            cache[name] = image
+            return image
+        }
     }
 }
 
