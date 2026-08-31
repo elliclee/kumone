@@ -517,7 +517,7 @@ struct FeatureCard: View {
                     .scaledToFill()
                     .frame(width: 230, height: 132)
                     .clipped()
-                featureArtworkScrim
+                lightArtworkScrim
             } else if let coverURL {
                 CachedAsyncImage(url: coverURL)
                     .frame(width: 230, height: 132)
@@ -532,25 +532,29 @@ struct FeatureCard: View {
                 ZStack {
                     Image(systemName: icon)
                         .font(.system(size: 22, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(cardForeground)
                     if showsDate {
                         Text("\(Calendar.current.component(.day, from: .now))")
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(cardForeground)
                             .offset(y: 3)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 Text(title)
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(cardForeground)
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.75))
+                    .foregroundStyle(cardForeground.opacity(0.72))
                     .lineLimit(1)
             }
             .padding(14)
-            .shadow(color: .black.opacity(0.4), radius: 2, y: 1)
+            .shadow(
+                color: artworkName == nil ? .black.opacity(0.4) : .white.opacity(0.45),
+                radius: 2,
+                y: 1
+            )
         }
         .frame(width: 230, height: 132)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous))
@@ -573,6 +577,24 @@ struct FeatureCard: View {
             startPoint: .top,
             endPoint: .bottom
         )
+    }
+
+    private var lightArtworkScrim: some View {
+        LinearGradient(
+            stops: [
+                .init(color: .white.opacity(0.02), location: 0),
+                .init(color: .white.opacity(0.10), location: 0.48),
+                .init(color: .white.opacity(0.42), location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    private var cardForeground: Color {
+        artworkName == nil
+            ? .white
+            : Color(red: 0.13, green: 0.14, blue: 0.22)
     }
 
     @MainActor
