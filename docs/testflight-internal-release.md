@@ -9,7 +9,7 @@
 - App Store Connect 名称：`Kumo`
 - App 内显示名称：`Kumo`
 - 内部版 Bundle ID：`com.wenmingshu.kumone.internal`
-- 版本：`0.3.12`
+- 首个内部构建：`0.3.15 (1)`
 - 签名方式：Apple Distribution + App Store provisioning profile
 - 分发范围：TestFlight Internal Only
 
@@ -22,6 +22,13 @@
 - `ITSAppUsesNonExemptEncryption=false`，应用不包含自研或非豁免加密算法。
 - 构建必须为 arm64、Release、`get-task-allow=false`，并完成 Apple Distribution 深度签名。
 - 上传时启用 `testFlightInternalTestingOnly`，确保该构建不能转为外部测试或正式发布。
+
+## 本机构建
+
+- 只读检查签名材料：`/Users/ellic/code/zhimingshu/.venv/bin/python Scripts/prepare-testflight-signing.py --status`
+- 导出本地签名 IPA：`Scripts/build-testflight.sh`
+- 校验归档并上传：`Scripts/build-testflight.sh --upload`
+- 内部版在构建命令中覆盖 Team、Bundle ID、版本和显示名，不修改 GitHub 侧载版使用的 `sb.moe.kumone`。
 
 ## 验收
 
