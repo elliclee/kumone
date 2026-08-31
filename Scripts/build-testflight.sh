@@ -44,20 +44,24 @@ PROFILE_NAME="$(echo "$SIGNING_OUTPUT" | sed -n 's/^PROFILE_NAME=//p')"
 [[ -n "$PROFILE_NAME" ]] || { echo "没有取得 Kumo 描述文件名。" >&2; exit 1; }
 
 echo "==> 归档 Kumo $VERSION ($BUILD_NUMBER)"
-xcodebuild archive \
-    -workspace "$WORKSPACE" \
-    -scheme "$SCHEME" \
-    -configuration Release \
-    -destination 'generic/platform=iOS' \
-    -archivePath "$ARCHIVE" \
-    CODE_SIGN_STYLE=Manual \
-    CODE_SIGN_IDENTITY="Apple Distribution" \
-    PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-    DEVELOPMENT_TEAM="$TEAM_ID" \
-    PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
-    INFOPLIST_KEY_CFBundleDisplayName="$DISPLAY_NAME" \
-    MARKETING_VERSION="$VERSION" \
-    CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+if [[ "${KUMO_REUSE_ARCHIVE:-0}" == "1" && -d "$ARCHIVE" ]]; then
+    echo "    复用已有 Archive：$ARCHIVE"
+else
+    xcodebuild archive \
+        -workspace "$WORKSPACE" \
+        -scheme "$SCHEME" \
+        -configuration Release \
+        -destination 'generic/platform=iOS' \
+        -archivePath "$ARCHIVE" \
+        CODE_SIGN_STYLE=Manual \
+        CODE_SIGN_IDENTITY="Apple Distribution" \
+        PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+        DEVELOPMENT_TEAM="$TEAM_ID" \
+        PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+        INFOPLIST_KEY_CFBundleDisplayName="$DISPLAY_NAME" \
+        MARKETING_VERSION="$VERSION" \
+        CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+fi
 
 APP="$ARCHIVE/Products/Applications/KumoneIOS.app"
 [[ -d "$APP" ]] || { echo "归档中没有 KumoneIOS.app" >&2; exit 1; }
@@ -103,7 +107,7 @@ cat > "$EXPORT_OPTIONS" <<PLIST
 </plist>
 PLIST
 
-echo "==> 导出模式：$DESTINATION（TestFlight Internal Only）"
+echo "==> 导出模式：${DESTINATION}（TestFlight Internal Only）"
 xcodebuild -exportArchive \
     -archivePath "$ARCHIVE" \
     -exportPath "$EXPORT_PATH" \
