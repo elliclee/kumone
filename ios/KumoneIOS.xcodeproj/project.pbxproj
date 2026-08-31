@@ -403,6 +403,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				PROVISIONING_PROFILE_SPECIFIER = "$(KUMO_PROVISIONING_PROFILE_SPECIFIER)";
 				SDKROOT = iphoneos;
 			};
 			name = Release;
