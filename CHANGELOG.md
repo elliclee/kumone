@@ -17,6 +17,8 @@ counterparts. 段落格式：`## <版本号> - <日期>`，条目必须写成单
 
 ### Improved / 改进
 
+- **iOS + macOS**: the user-facing app name is now **Kumo**, from the Japanese word 雲 (*kumo*, “cloud”); technical target names, bundle identifiers and existing storage paths stay unchanged for compatibility.
+- **iOS + macOS**：面向用户的应用名称统一改为 **Kumo**，取自日语「雲」（*kumo*，云）；为保持兼容，技术 target 名称、Bundle ID 与既有存储路径不变。
 - **iOS**: audited and unified app-owned buttons across Home, Roam, library, detail, login, updater and player screens; primary actions now share a 48pt brand capsule, compact actions provide at least a 44pt hit target, and disabled plus Reduce Motion states behave consistently while system toolbars and menus remain native.
 - **iOS**：完成首页、漫游、收藏、详情、登录、更新与播放页的按钮审计和统一；主操作统一为 48pt 品牌胶囊按钮，小型操作至少提供 44pt 点击区域，禁用态与「减弱动态效果」行为一致，系统工具栏和菜单则保持原生样式。
 

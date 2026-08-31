@@ -66,7 +66,7 @@ struct AIRecommendationsView: View {
                 }
                 .font(.headline)
 
-                Text("Kumone 只会将歌名和歌手发送给 AI 推荐服务，并匹配网易云曲库。")
+                Text("Kumo 只会将歌名和歌手发送给 AI 推荐服务，并匹配网易云曲库。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

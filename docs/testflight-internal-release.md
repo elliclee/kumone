@@ -1,13 +1,13 @@
-# Kumone TestFlight 内部测试发布说明
+# Kumo TestFlight 内部测试发布说明
 
 ## 目标
 
-使用现有“问命书”Apple Developer Team 发布 Kumone 的 TestFlight Internal Only 构建，供团队内部安装验证；不提交外部 Beta 审核，也不提交 App Store 审核。
+使用现有“问命书”Apple Developer Team 发布 Kumo 的 TestFlight Internal Only 构建，供团队内部安装验证；不提交外部 Beta 审核，也不提交 App Store 审核。
 
 ## 标识与隔离
 
-- App Store Connect 名称：`Kumone 内部测试`
-- App 内显示名称：`Kumone`
+- App Store Connect 名称：`Kumo`
+- App 内显示名称：`Kumo`
 - 内部版 Bundle ID：`com.wenmingshu.kumone.internal`
 - 版本：`0.3.12`
 - 签名方式：Apple Distribution + App Store provisioning profile
@@ -26,6 +26,6 @@
 ## 验收
 
 - App Store Connect 处理状态为 `VALID`。
-- 构建进入 Kumone 自己的内部测试组，不能加入问命书测试组。
+- 构建进入 Kumo 自己的内部测试组，不能加入问命书测试组。
 - TestFlight 显示版本、构建号和中文测试说明正确。
 - 内部测试者可从 TestFlight 安装，且不会覆盖问命书 App。

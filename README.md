@@ -6,11 +6,11 @@
 
 <div align="center">
 
-<img src="docs/icon.png" width="140" alt="Kumone" />
+<img src="docs/icon.png" width="140" alt="Kumo" />
 
-# Kumone
+# Kumo
 
-**雲の音 — Native macOS client for NetEase Cloud Music**
+**雲 — Native macOS client for NetEase Cloud Music**
 
 Built with SwiftUI · Talks directly to NetEase's real API · Sparkle auto-updates
 
@@ -33,7 +33,7 @@ Built with SwiftUI · Talks directly to NetEase's real API · Sparkle auto-updat
 
 ## About the Name
 
-**Kumone** comes from the Japanese **雲の音** (*kumo no ne*, "the sound of clouds"), contracted into one word — **雲音** (くもね, *kumone*). It is a nod to the "cloud" in NetEase **Cloud** Music: the music drifting down to you from the cloud.
+**Kumo** comes from the Japanese word **雲** (くも, *kumo*), meaning “cloud.” It echoes the “cloud” in NetEase **Cloud** Music: music drifting down to you from the cloud.
 
 ## Features
 
@@ -70,12 +70,12 @@ Download the latest `Kumone-x.y.z.zip` from
 it into Applications.
 
 The app is signed with a Developer ID certificate and notarized by Apple, with
-built-in Sparkle automatic updates (menu bar: Kumone → Check for Updates…).
+built-in Sparkle automatic updates (menu bar: Kumo → Check for Updates…).
 
 ### iOS / iPadOS (sideload)
 
-Every release ships an **unsigned** `Kumone-iOS-x.y.z.ipa` (iOS 16+). Kumone
-is an unofficial client and will not be on the App Store or TestFlight, so
+Every release ships an **unsigned** `Kumone-iOS-x.y.z.ipa` (iOS 16+). Kumo
+is an unofficial client, so
 install it with a sideloading tool that signs the IPA with your own Apple ID —
 [AltStore](https://altstore.io), [SideStore](https://sidestore.io),
 [Sideloadly](https://sideloadly.io) or Xcode all work. On iOS 26+ the tab bar is the system’s native Liquid Glass; on iOS 16–25 it falls back to a simulated glass bar.
@@ -88,7 +88,7 @@ AltStore / SideStore can also track the release automatically via a source.
 #### In-app auto-update (TrollStore only)
 
 On a device with **[TrollStore](https://github.com/opa334/TrollStore)** (巨魔),
-Kumone updates itself: Settings → About → **Check for Updates** (it also checks
+Kumo updates itself: Settings → About → **Check for Updates** (it also checks
 on launch) downloads the new IPA with a progress ring and hands it to TrollStore
 via `apple-magnifier://install?url=…` for a one-tap, fully automatic install —
 the same mechanism Dopamine uses. This works **only under TrollStore**: a plain
@@ -130,7 +130,7 @@ Want a **tvOS** build? Check out [Sonimbus](https://github.com/gee1k/sonimbus), 
 
 ## Credits
 
-Kumone is written from scratch in Swift. No code was copied from the projects
+Kumo is written from scratch in Swift. No code was copied from the projects
 below, but their design and implementation ideas were referenced extensively:
 
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic) (MIT, © qier222) — feature design, NetEase API endpoints and behavior

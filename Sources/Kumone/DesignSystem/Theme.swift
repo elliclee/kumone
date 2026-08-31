@@ -3,7 +3,7 @@ import SwiftUI
 /// Design tokens: color, radius, spacing, layout metrics.
 enum Theme {
     /// iOS uses the clearer pink-red associated with Music and system media
-    /// controls. macOS keeps Kumone's original, slightly warmer brand red.
+    /// controls. macOS keeps Kumo's original, slightly warmer brand red.
     static let accent: Color = {
         #if os(iOS)
         return Color(red: 0.98, green: 0.15, blue: 0.27) // #FA2645

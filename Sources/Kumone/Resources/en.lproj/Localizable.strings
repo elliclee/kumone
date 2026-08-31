@@ -1,4 +1,4 @@
-/* Kumone — English localization. Keys are the Simplified Chinese source strings. */
+/* Kumo — English localization. Keys are the Simplified Chinese source strings. */
 
 /* Sidebar & navigation */
 "推荐" = "Home";
@@ -60,7 +60,7 @@
 "已开启心动模式" = "Heartbeat Mode enabled";
 "从红心之外发现新歌" = "Discover beyond your liked songs";
 "根据你的红心歌曲生成推荐" = "Recommendations from your liked songs";
-"Kumone 只会将歌名和歌手发送给 AI 推荐服务，并匹配网易云曲库。" = "Kumone sends only song titles and artists to the recommendation service, then matches the NetEase catalog.";
+"Kumo 只会将歌名和歌手发送给 AI 推荐服务，并匹配网易云曲库。" = "Kumo sends only song titles and artists to the recommendation service, then matches the NetEase catalog.";
 "描述此刻想听的音乐（可选）" = "Describe what you want to hear (optional)";
 "清除听歌描述" = "Clear listening description";
 

@@ -6,11 +6,11 @@
 
 <div align="center">
 
-<img src="docs/icon.png" width="140" alt="Kumone" />
+<img src="docs/icon.png" width="140" alt="Kumo" />
 
-# Kumone
+# Kumo
 
-**雲の音 — 原生 macOS 网易云音乐客户端**
+**雲 — 原生 macOS 网易云音乐客户端**
 
 SwiftUI 编写 · 直连网易云真实 API · Sparkle 自动更新
 
@@ -33,7 +33,7 @@ SwiftUI 编写 · 直连网易云真实 API · Sparkle 自动更新
 
 ## 名字由来
 
-**Kumone** 取自日语 **雲の音**（*kumo no ne*，「云的声音」），缩合为一个词 —— **雲音**（假名写作 くもね，读作 *kumone*）。呼应网易「云」音乐的「云」字：从云端飘落到你耳边的音乐。
+**Kumo** 取自日语「雲」（假名写作 くも，读作 *kumo*），意为“云”。它呼应网易「云」音乐的「云」字：从云端飘落到你耳边的音乐。
 
 ## 功能
 
@@ -69,17 +69,17 @@ brew install owo-network/brew/kumone --cask
 `Kumone-x.y.z.zip`，解压后拖入「应用程序」。
 
 应用已使用 Developer ID 签名并通过 Apple 公证，内置 Sparkle 自动更新
-（菜单栏 Kumone → 检查更新…）。
+（菜单栏 Kumo → 检查更新…）。
 
 ### iOS / iPadOS（侧载）
 
-每次发版都会附带**无签名**的 `Kumone-iOS-x.y.z.ipa`（iOS 16+）。Kumone 是非官方客户端，不会上架 App Store 或 TestFlight，请用侧载工具以自己的 Apple ID 签名安装 —— [AltStore](https://altstore.io)、[SideStore](https://sidestore.io)、[Sideloadly](https://sideloadly.io) 或 Xcode 均可。iOS 26+ 的 Tab Bar 使用系统原生 Liquid Glass；iOS 16–25 则回退为仿制的玻璃栏。
+每次发版都会附带**无签名**的 `Kumone-iOS-x.y.z.ipa`（iOS 16+）。Kumo 是非官方客户端，请用侧载工具以自己的 Apple ID 签名安装 —— [AltStore](https://altstore.io)、[SideStore](https://sidestore.io)、[Sideloadly](https://sideloadly.io) 或 Xcode 均可。iOS 26+ 的 Tab Bar 使用系统原生 Liquid Glass；iOS 16–25 则回退为仿制的玻璃栏。
 
 更新：iOS 应用无法自我替换。设置 → 关于 → **检查更新** 会提示是否有新版本并给出下载链接，下载新 IPA 后用同一工具重新安装即可，登录状态与设置会保留。AltStore / SideStore 也可通过 source 自动追踪发布。
 
 #### 应用内自动更新（仅限 TrollStore / 巨魔）
 
-在装有 **[TrollStore](https://github.com/opa334/TrollStore)（巨魔）** 的设备上，Kumone 可自我更新：设置 → 关于 → **检查更新**（启动时也会检查）会带进度圆环下载新 IPA，并通过 `apple-magnifier://install?url=…` 移交给 TrollStore 一键自动安装 —— 与 Dopamine 的机制相同。此功能**仅在 TrollStore 下可用**：普通 AltStore/SideStore 侧载版以个人证书签名，没有在设备上安装 IPA 的权限，因此会降级为打开发布页手动重新侧载。
+在装有 **[TrollStore](https://github.com/opa334/TrollStore)（巨魔）** 的设备上，Kumo 可自我更新：设置 → 关于 → **检查更新**（启动时也会检查）会带进度圆环下载新 IPA，并通过 `apple-magnifier://install?url=…` 移交给 TrollStore 一键自动安装 —— 与 Dopamine 的机制相同。此功能**仅在 TrollStore 下可用**：普通 AltStore/SideStore 侧载版以个人证书签名，没有在设备上安装 IPA 的权限，因此会降级为打开发布页手动重新侧载。
 
 ## 构建
 
@@ -112,7 +112,7 @@ Sources/Kumone/
 
 ## Credits
 
-Kumone 是从零编写的 Swift 实现，未复制以下项目的代码，但深度参考了它们的设计与实现思路，在此致谢：
+Kumo 是从零编写的 Swift 实现，未复制以下项目的代码，但深度参考了它们的设计与实现思路，在此致谢：
 
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic)（MIT，© qier222）— 功能设计、网易云 API 端点与行为逻辑的参考
 - [kaset](https://github.com/sozercan/kaset)（MIT，© sozercan）— UI 设计系统、动效与 SwiftPM 打包方案的参考
