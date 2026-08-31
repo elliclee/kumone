@@ -355,6 +355,7 @@ struct HomeView: View {
                             title: "私人漫游",
                             subtitle: "从喜欢的歌开始漫游",
                             icon: "wave.3.right.circle.fill",
+                            artworkName: "private-roaming",
                             gradient: [Color(red: 0.16, green: 0.20, blue: 0.42),
                                        Color(red: 0.36, green: 0.24, blue: 0.62)]
                         )
@@ -368,6 +369,7 @@ struct HomeView: View {
                             title: "心动模式",
                             subtitle: "你的红心歌曲和相似推荐",
                             icon: "heart.circle.fill",
+                            artworkName: "heartbeat-mode",
                             gradient: [Color(red: 0.85, green: 0.19, blue: 0.41),
                                        Color(red: 0.98, green: 0.42, blue: 0.34)]
                         )
@@ -379,6 +381,7 @@ struct HomeView: View {
                             title: "AI 猜你喜欢",
                             subtitle: "从红心之外发现新歌",
                             icon: "sparkles",
+                            artworkName: "ai-discovery",
                             gradient: [Color(red: 0.35, green: 0.23, blue: 0.78),
                                        Color(red: 0.77, green: 0.25, blue: 0.58)]
                         )
@@ -500,17 +503,24 @@ struct FeatureCard: View {
     let subtitle: LocalizedStringKey
     let icon: String
     var coverURL: URL?
+    var artworkName: String?
     var gradient: [Color] = [Color(red: 0.75, green: 0.16, blue: 0.22),
                              Color(red: 0.95, green: 0.35, blue: 0.28)]
     var showsDate = false
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            if let coverURL {
+            if let artworkName {
+                Image(artworkName, bundle: .module)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 230, height: 132)
+                    .clipped()
+                featureArtworkScrim
+            } else if let coverURL {
                 CachedAsyncImage(url: coverURL)
                     .frame(width: 230, height: 132)
-                LinearGradient(colors: [.black.opacity(0.1), .black.opacity(0.68)],
-                               startPoint: .top, endPoint: .bottom)
+                featureArtworkScrim
             } else {
                 LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
                 RadialGradient(colors: [.white.opacity(0.18), .clear],
@@ -550,6 +560,18 @@ struct FeatureCard: View {
         )
         #endif
         .contentShape(Rectangle())
+    }
+
+    private var featureArtworkScrim: some View {
+        LinearGradient(
+            stops: [
+                .init(color: .black.opacity(0.08), location: 0),
+                .init(color: .black.opacity(0.12), location: 0.45),
+                .init(color: .black.opacity(0.76), location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
 }
 

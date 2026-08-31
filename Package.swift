@@ -20,6 +20,9 @@ let package = Package(
             ],
             path: "Sources/Kumone",
             exclude: ["Resources"],
+            resources: [
+                .process("FeatureAssets"),
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
             ]
