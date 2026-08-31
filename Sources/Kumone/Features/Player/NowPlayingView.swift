@@ -225,7 +225,10 @@ struct NowPlayingView: View {
         #if os(iOS)
         switch settings.nowPlayingMode {
         case .vinyl:
-            vinylCompactLayout(size: size)
+            vinylCompactLayout(
+                size: size,
+                safeAreaInsets: safeAreaInsets
+            )
         case .classic:
             classicCompactLayout(size: size)
         case .immersive:
@@ -246,7 +249,10 @@ struct NowPlayingView: View {
         #endif
     }
 
-    private func vinylCompactLayout(size: CGSize) -> some View {
+    private func vinylCompactLayout(
+        size: CGSize,
+        safeAreaInsets: EdgeInsets = EdgeInsets()
+    ) -> some View {
         let discDimension = min(size.width - 64, size.height * 0.42, 320)
         let showsVinyl = !showLyricsOnMobile && !showQueueOnMobile
 
@@ -331,7 +337,7 @@ struct NowPlayingView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             #if os(iOS)
-            immersiveControls
+            immersiveControls(bottomSafeAreaInset: safeAreaInsets.bottom)
             #else
             VStack(spacing: 12) {
                 NowPlayingScrubber()
@@ -397,14 +403,18 @@ struct NowPlayingView: View {
             )
             .offset(x: canvasOffset.width, y: canvasOffset.height)
 
-            panoramicArtworkControls
+            panoramicArtworkControls(
+                bottomSafeAreaInset: safeAreaInsets.bottom
+            )
                 .padding(.horizontal, 32)
                 .opacity(showsArtworkScene ? 1 : 0)
                 .offset(y: showsArtworkScene || reduceMotion ? 0 : 24)
                 .allowsHitTesting(showsArtworkScene)
                 .accessibilityHidden(!showsArtworkScene)
 
-            immersiveDetailContent
+            immersiveDetailContent(
+                bottomSafeAreaInset: safeAreaInsets.bottom
+            )
                 .padding(.horizontal, 32)
                 .opacity(showsArtworkScene ? 0 : 1)
                 .offset(y: showsArtworkScene && !reduceMotion ? -18 : 0)
@@ -415,19 +425,28 @@ struct NowPlayingView: View {
         .animation(immersiveSceneAnimation, value: showsArtworkScene)
     }
 
-    private var panoramicArtworkControls: some View {
+    private func panoramicArtworkControls(
+        bottomSafeAreaInset: CGFloat
+    ) -> some View {
         VStack(spacing: 0) {
             Color.clear.frame(
                 height: NowPlayingPresentationMetrics.immersiveHeaderTopInset
             )
-            Spacer(minLength: 220)
+            // Artwork gets the remaining height instead of reserving a fixed
+            // 220pt. On shorter viewports this space can collapse so the
+            // complete control stack always wins the vertical layout.
+            Spacer(minLength: 0)
             MinimalTrackInfoRow()
                 .padding(.bottom, 18)
-            immersiveControls
+            immersiveControls(bottomSafeAreaInset: bottomSafeAreaInset)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
         }
     }
 
-    private var immersiveDetailContent: some View {
+    private func immersiveDetailContent(
+        bottomSafeAreaInset: CGFloat
+    ) -> some View {
         VStack(spacing: 0) {
             Color.clear.frame(
                 height: NowPlayingPresentationMetrics.immersiveHeaderTopInset
@@ -454,7 +473,9 @@ struct NowPlayingView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            immersiveControls
+            immersiveControls(bottomSafeAreaInset: bottomSafeAreaInset)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
         }
     }
 
@@ -567,7 +588,9 @@ struct NowPlayingView: View {
             : ImmersiveArtworkTransition.animation
     }
 
-    private var immersiveControls: some View {
+    private func immersiveControls(
+        bottomSafeAreaInset: CGFloat = 0
+    ) -> some View {
         VStack(spacing: 17) {
             NowPlayingScrubber()
             CompactTransportControls()
@@ -580,7 +603,12 @@ struct NowPlayingView: View {
             )
         }
         .padding(.top, 14)
-        .padding(.bottom, 10)
+        .padding(
+            .bottom,
+            ImmersivePanoramaMetrics.controlsBottomPadding(
+                safeAreaBottom: bottomSafeAreaInset
+            )
+        )
         .accessibilityIdentifier("immersiveControls")
     }
 

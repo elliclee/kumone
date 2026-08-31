@@ -7,6 +7,7 @@ enum ImmersivePanoramaMetrics {
     static let minimumArtworkHeight: CGFloat = 360
     static let artworkHeightRatio: CGFloat = 0.66
     static let artworkWidthRatio: CGFloat = 1.36
+    static let minimumControlsBottomPadding: CGFloat = 10
 
     static func artworkHeight(for size: CGSize) -> CGFloat {
         let proportionalHeight = min(
@@ -31,6 +32,13 @@ enum ImmersivePanoramaMetrics {
             width: (safeAreaInsets.trailing - safeAreaInsets.leading) / 2,
             height: (safeAreaInsets.bottom - safeAreaInsets.top) / 2
         )
+    }
+
+    /// Keeps the final control row above the Home indicator while preserving
+    /// the compact visual padding used by containers that already exclude the
+    /// safe area.
+    static func controlsBottomPadding(safeAreaBottom: CGFloat) -> CGFloat {
+        max(minimumControlsBottomPadding, safeAreaBottom)
     }
 }
 

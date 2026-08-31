@@ -41,6 +41,17 @@ struct NowPlayingPresentationTests {
         )
     }
 
+    @Test func immersiveControlsRespectTheBottomSafeArea() {
+        #expect(
+            ImmersivePanoramaMetrics.controlsBottomPadding(safeAreaBottom: 34)
+                == 34
+        )
+        #expect(
+            ImmersivePanoramaMetrics.controlsBottomPadding(safeAreaBottom: 0)
+                == ImmersivePanoramaMetrics.minimumControlsBottomPadding
+        )
+    }
+
     @Test func brightArtworkGetsAStrongerTopScrim() throws {
         let bright = try solidImage(red: 0.96, green: 0.96, blue: 0.96)
         let dark = try solidImage(red: 0.08, green: 0.08, blue: 0.08)
