@@ -378,7 +378,7 @@ struct HomeView: View {
 
                     NavigationLink(value: Destination.aiRecommendations) {
                         FeatureCard(
-                            title: "AI 猜你喜欢",
+                            title: "Kumo 猜你喜欢",
                             subtitle: "从红心之外发现新歌",
                             icon: "sparkles",
                             artworkName: "ai-discovery",

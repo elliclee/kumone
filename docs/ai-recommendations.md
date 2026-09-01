@@ -1,4 +1,4 @@
-# AI 猜你喜欢
+# Kumo 猜你喜欢
 
 ## 目标
 
@@ -6,7 +6,7 @@
 
 ## 首版范围
 
-- macOS / iPadOS 侧边栏新增“AI 猜你喜欢”，首页增加功能卡片；iPhone 通过首页卡片进入。
+- macOS / iPadOS 侧边栏新增“Kumo 猜你喜欢”，首页增加功能卡片；iPhone 通过首页卡片进入。
 - 用户自行配置 DeepSeek API Key，Key 仅保存到系统钥匙串，不进入源码或 `UserDefaults`。
 - 每次随机抽取最多 40 首红心歌曲作为口味样本，不发送账号、Cookie、歌曲 ID 等身份信息。
 - 调用 DeepSeek Chat Completions JSON Output，生成口味总结、候选歌名、歌手和推荐理由。

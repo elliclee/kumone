@@ -49,7 +49,7 @@ struct AIRecommendationsView: View {
             .frame(maxWidth: 920, alignment: .leading)
             .frame(maxWidth: .infinity, alignment: .center)
         }
-        .navigationTitle("AI 猜你喜欢")
+        .navigationTitle("Kumo 猜你喜欢")
         .onAppear {
             hasAPIKey = DeepSeekCredentialStore.isConfigured
         }
